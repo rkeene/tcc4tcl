@@ -1,0 +1,49 @@
+CC = @CC@
+AR = @AR@
+RANLIB = @RANLIB@
+CFLAGS = @CFLAGS@ @SHOBJFLAGS@
+CPPFLAGS = @CPPFLAGS@ -I@srcdir@ @DEFS@
+LDFLAGS =
+SHOBJLDFLAGS = @SHOBJLDFLAGS@
+LIBS = @LIBS@
+INSTALL = @INSTALL@
+PACKAGE_NAME = @PACKAGE_NAME@
+PACKAGE_VERSION = @PACKAGE_VERSION@
+TCL_PACKAGE_PATH = @TCL_PACKAGE_PATH@
+PACKAGE_INSTALL_DIR = $(TCL_PACKAGE_PATH)/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
+TARGETS = @TARGETS@
+srcdir = @srcdir@
+
+all: $(TARGETS)
+
+tcltcc.o: $(srcdir)/tcltcc.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o tcltcc.o -c $(srcdir)/tcltcc.c
+
+tcltcc-shared.@SHOBJEXT@: tcltcc.o
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(SHOBJLDFLAGS) -o tcltcc-shared.@SHOBJEXT@ tcltcc.o $(LIBS)
+
+tcltcc-static.a: tcltcc.o
+	$(AR) rcu tcltcc-static.a tcltcc.o
+	-$(RANLIB) tcltcc-static.a
+
+install: $(TARGETS) pkgIndex.tcl
+	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
+	$(INSTALL) -m 0644 pkgIndex.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
+	$(INSTALL) -m 0755 $(TARGETS) "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
+
+clean:
+	rm -f tcltcc.o
+	rm -f tcltcc-shared.@SHOBJEXT@ tcltcc-static.a
+	rm -f tcltcc-shared.@SHOBJEXT@.a tcltcc-shared.@SHOBJEXT@.def
+
+distclean: clean
+	rm -rf autom4te.cache
+	rm -f config.log config.status
+	rm -f pkgIndex.tcl
+	rm -f Makefile
+
+mrproper: distclean
+	rm -f configure aclocal.m4
+	rm -f config.guess config.sub install-sh
+
+.PHONY: all install clean distclean mrproper
