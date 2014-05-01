@@ -17,11 +17,11 @@ srcdir = @srcdir@
 all: $(TARGETS)
 
 tcc/config.h:
-	if [ "$(srcdir)" = "." ]; then
-		cd tcc && ./configure
-	else
-		mkdir tcc >/dev/null 2>/dev/null || true
-		cd tcc && $(shell cd $(srcdir) && pwd)/tcc/configure
+	if [ "$(srcdir)" = "." ]; then \
+		cd tcc && ./configure; \
+	else \
+		mkdir tcc >/dev/null 2>/dev/null; \
+		cd tcc && $(shell cd $(srcdir) && pwd)/tcc/configure; \
 	fi
 
 tcc/libtcc.a: tcc/config.h
