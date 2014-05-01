@@ -2,7 +2,7 @@ CC = @CC@
 AR = @AR@
 RANLIB = @RANLIB@
 CFLAGS = @CFLAGS@ @SHOBJFLAGS@
-CPPFLAGS = @CPPFLAGS@ -I@srcdir@ @DEFS@
+CPPFLAGS = @CPPFLAGS@ -I@srcdir@ -I@srcdir@/tcc -Itcc @DEFS@
 LDFLAGS =
 SHOBJLDFLAGS = @SHOBJLDFLAGS@
 LIBS = @LIBS@
@@ -16,15 +16,28 @@ srcdir = @srcdir@
 
 all: $(TARGETS)
 
-tcltcc.o: $(srcdir)/tcltcc.c
+tcc/config.h:
+	if [ "$(srcdir)" = "." ]; then
+		cd tcc && ./configure
+	else
+		mkdir tcc >/dev/null 2>/dev/null || true
+		cd tcc && $(shell cd $(srcdir) && pwd)/tcc/configure
+	fi
+
+tcc/libtcc.a: tcc/config.h
+	$(MAKE) -C tcc libtcc.a
+
+tcltcc.o: $(srcdir)/tcltcc.c $(srcdir)/tcc/tcc.h $(srcdir)/tcc/libtcc.h tcc/config.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o tcltcc.o -c $(srcdir)/tcltcc.c
 
-tcltcc-shared.@SHOBJEXT@: tcltcc.o
+tcltcc-shared.@SHOBJEXT@: tcltcc.o tcc/libtcc.a
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(SHOBJLDFLAGS) -o tcltcc-shared.@SHOBJEXT@ tcltcc.o $(LIBS)
 
-tcltcc-static.a: tcltcc.o
-	$(AR) rcu tcltcc-static.a tcltcc.o
-	-$(RANLIB) tcltcc-static.a
+tcltcc-static.a: tcltcc.o tcc/libtcc.a
+	cp tcc/libtcc.a tcltcc-static.new.a
+	$(AR) rcu tcltcc-static.new.a tcltcc.o
+	-$(RANLIB) tcltcc-static.new.a
+	mv tcltcc-static.new.a tcltcc-static.a
 
 install: $(TARGETS) pkgIndex.tcl
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
@@ -35,12 +48,14 @@ clean:
 	rm -f tcltcc.o
 	rm -f tcltcc-shared.@SHOBJEXT@ tcltcc-static.a
 	rm -f tcltcc-shared.@SHOBJEXT@.a tcltcc-shared.@SHOBJEXT@.def
+	-$(MAKE) -C tcc clean
 
 distclean: clean
 	rm -rf autom4te.cache
 	rm -f config.log config.status
 	rm -f pkgIndex.tcl
 	rm -f Makefile
+	-$(MAKE) -C tcc distclean
 
 mrproper: distclean
 	rm -rf __TMP__
