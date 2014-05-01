@@ -2,6 +2,7 @@
 
 # Download latest copy of autoconf macros
 (
+	mkdir aclocal >/dev/null 2>/dev/null
 	cd aclocal || exit 1
 
 	for file in shobj.m4 tcl.m4 versionscript.m4; do
