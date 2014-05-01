@@ -43,6 +43,7 @@ distclean: clean
 	rm -f Makefile
 
 mrproper: distclean
+	rm -rf __TMP__ tcc
 	rm -f configure aclocal.m4
 	rm -f config.guess config.sub install-sh
 
