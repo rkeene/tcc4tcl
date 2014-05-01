@@ -1,0 +1,13 @@
+aclocal.m4
+aclocal/shobj.m4
+aclocal/tcl.m4
+aclocal/versionscript.m4
+config.guess
+config.sub
+config.log
+config.status
+configure
+install-sh
+Makefile
+pkgIndex.tcl
+tcc/*
