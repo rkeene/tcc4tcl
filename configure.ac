@@ -11,9 +11,12 @@ dnl Determine system information
 DC_CHK_OS_INFO
 
 dnl Determine if a shared or static build is requested
-target=shared
 AC_ARG_ENABLE([static], AS_HELP_STRING([--enable-static], [build static library instead of shared library]), [
-	target=static
+	if test "$enableval" = "no"; then
+		target=static
+	else
+		target=shared
+	fi
 ], [
 	target=shared
 ])
