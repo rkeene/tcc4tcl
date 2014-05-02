@@ -13,15 +13,16 @@ DC_CHK_OS_INFO
 dnl Determine if a shared or static build is requested
 AC_ARG_ENABLE([static], AS_HELP_STRING([--enable-static], [build static library instead of shared library]), [
 	if test "$enableval" = "no"; then
-		target=static
+		TCC4TCL_TARGET=static
 	else
-		target=shared
+		TCC4TCL_TARGET=shared
 	fi
 ], [
-	target=shared
+	TCC4TCL_TARGET=shared
 ])
 
-if test "${target}" = "shared"; then
+TCC_CONFIGURE_OPTS=""
+if test "${TCC4TCL_TARGET}" = "shared"; then
 	dnl Determine how to make shared objects
 	DC_GET_SHOBJFLAGS
 
@@ -29,11 +30,13 @@ if test "${target}" = "shared"; then
 	DC_SETVERSIONSCRIPT([tcltcc.syms], [tcltcc.vers])
 	DC_FIND_STRIP_AND_REMOVESYMS([tcltcc.syms])
 
-	TARGETS="tcltcc.${SHOBJEXT}"
+	TARGET="tcltcc.${SHOBJEXT}"
 else
-	TARGETS="tcltcc-static.a"
+	TARGET="tcltcc-static.a"
 fi
-AC_SUBST(TARGETS)
+AC_SUBST(TARGET)
+AC_SUBST(TCC4TCL_TARGET)
+AC_SUBST(TCC_CONFIGURE_OPTS)
 
 dnl Find out if we have the functions needed to open shared objects
 AC_SEARCH_LIBS(dlopen, dl,, [

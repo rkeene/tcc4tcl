@@ -2,7 +2,7 @@ prefix = UNSPECIFIED
 exec_prefix = @exec_prefix@
 libdir = @libdir@
 
-TARGETS = @TARGETS@
+TARGET = @TARGET@
 
 CC = @CC@
 AR = @AR@
@@ -21,10 +21,10 @@ TCLCONFIGPATH = @TCLCONFIGPATH@
 TCL_PACKAGE_PATH = @TCL_PACKAGE_PATH@
 tcllibdir = $(shell if echo "$(libdir)" | grep '^UNSPECIFIED' >/dev/null; then echo $(TCL_PACKAGE_PATH); else echo "$(libdir)"; fi)
 PACKAGE_INSTALL_DIR = $(tcllibdir)/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
-TCC_CONFIGURE_OPTS = --extra-cflags='$(CPPFLAGS) $(CFLAGS)' --with-tcl=$(TCLCONFIGPATH) --sysincludepaths='{B}/include' --libpaths='{B}/lib'
+TCC_CONFIGURE_OPTS = --extra-cflags='$(CPPFLAGS) $(CFLAGS)' --with-tcl=$(TCLCONFIGPATH) --sysincludepaths='{B}/include' --libpaths='{B}/lib' @TCC_CONFIGURE_OPTS@
 srcdir = @srcdir@
 
-all: $(TARGETS)
+all: $(TARGET)
 
 tcc/config.h:
 	if [ "$(srcdir)" = "." ]; then \
@@ -54,11 +54,11 @@ tcltcc-static.a: tcltcc.o tcc/libtcc.a
 	-$(RANLIB) tcltcc-static.new.a
 	mv tcltcc-static.new.a tcltcc-static.a
 
-install: $(TARGETS) pkgIndex.tcl $(srcdir)/tcc.tcl tcc/libtcc1.a $(shell echo $(srcdir)/tcc/include/*) $(srcdir)/headers.awk
+install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc.tcl tcc/libtcc1.a $(shell echo $(srcdir)/tcc/include/*) $(srcdir)/headers.awk
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib"
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include"
-	$(INSTALL) -m 0755 $(TARGETS) "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
+	$(INSTALL) -m 0755 $(TARGET) "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -m 0644 pkgIndex.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -m 0644 $(srcdir)/tcc.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -m 0644 tcc/libtcc1.a "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib"
