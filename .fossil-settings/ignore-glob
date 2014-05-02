@@ -11,3 +11,8 @@ install-sh
 Makefile
 pkgIndex.tcl
 tcc/*
+work/*
+tcltcc.o
+tcltcc-static.a
+tcltcc.so
+tcltcc.sl
