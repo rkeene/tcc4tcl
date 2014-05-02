@@ -1,3 +1,9 @@
+prefix = UNSPECIFIED
+exec_prefix = @exec_prefix@
+libdir = @libdir@
+
+TARGETS = @TARGETS@
+
 CC = @CC@
 AR = @AR@
 RANLIB = @RANLIB@
@@ -7,12 +13,14 @@ LDFLAGS =
 SHOBJLDFLAGS = @SHOBJLDFLAGS@
 LIBS = @LIBS@
 INSTALL = @INSTALL@
+
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
-TCL_PACKAGE_PATH = @TCL_PACKAGE_PATH@
+
 TCLCONFIGPATH = @TCLCONFIGPATH@
-PACKAGE_INSTALL_DIR = $(TCL_PACKAGE_PATH)/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
-TARGETS = @TARGETS@
+TCL_PACKAGE_PATH = @TCL_PACKAGE_PATH@
+tcllibdir = $(shell if echo "$(libdir)" | grep '^UNSPECIFIED' >/dev/null; then echo $(TCL_PACKAGE_PATH); else echo "$(libdir)"; fi)
+PACKAGE_INSTALL_DIR = $(tcllibdir)/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
 TCC_CONFIGURE_OPTS = --extra-cflags='$(CPPFLAGS) $(CFLAGS)' --with-tcl=$(TCLCONFIGPATH)
 srcdir = @srcdir@
 
