@@ -23,6 +23,7 @@ tcllibdir = $(shell if echo "$(libdir)" | grep '^UNSPECIFIED' >/dev/null; then e
 PACKAGE_INSTALL_DIR = $(tcllibdir)/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
 TCC_CONFIGURE_OPTS = --extra-cflags='$(CPPFLAGS) $(CFLAGS)' --with-tcl=$(TCLCONFIGPATH) --sysincludepaths='{B}/include' --libpaths='{B}/lib' @TCC_CONFIGURE_OPTS@
 srcdir = @srcdir@
+@SET_MAKE@
 
 all: $(TARGET)
 
