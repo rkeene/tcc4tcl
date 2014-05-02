@@ -21,7 +21,7 @@ TCLCONFIGPATH = @TCLCONFIGPATH@
 TCL_PACKAGE_PATH = @TCL_PACKAGE_PATH@
 tcllibdir = $(shell if echo "$(libdir)" | grep '^UNSPECIFIED' >/dev/null; then echo $(TCL_PACKAGE_PATH); else echo "$(libdir)"; fi)
 PACKAGE_INSTALL_DIR = $(tcllibdir)/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
-TCC_CONFIGURE_OPTS = --extra-cflags='$(CPPFLAGS) $(CFLAGS)' --with-tcl=$(TCLCONFIGPATH)
+TCC_CONFIGURE_OPTS = --extra-cflags='$(CPPFLAGS) $(CFLAGS)' --with-tcl=$(TCLCONFIGPATH) --sysincludepaths='{B}/include' --libpaths='{B}/lib'
 srcdir = @srcdir@
 
 all: $(TARGETS)
@@ -54,15 +54,25 @@ tcltcc-static.a: tcltcc.o tcc/libtcc.a
 	-$(RANLIB) tcltcc-static.new.a
 	mv tcltcc-static.new.a tcltcc-static.a
 
-install: $(TARGETS) pkgIndex.tcl tcc.tcl tcc/libtcc1.a $(shell echo tcc/include/*)
+install: $(TARGETS) pkgIndex.tcl $(srcdir)/tcc.tcl tcc/libtcc1.a $(shell echo $(srcdir)/tcc/include/*) $(srcdir)/headers.awk
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib"
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include"
 	$(INSTALL) -m 0755 $(TARGETS) "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -m 0644 pkgIndex.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
-	$(INSTALL) -m 0644 tcc.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
+	$(INSTALL) -m 0644 $(srcdir)/tcc.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -m 0644 tcc/libtcc1.a "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib"
-	$(INSTALL) -m 0644 $(shell echo tcc/include/*) "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include"
+	$(INSTALL) -m 0644 $(shell echo $(srcdir)/tcc/include/*) "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include"
+	( for file in tcl.h limits.h unistd.h; do echo "#include <$${file}>"; done ) | \
+		$(CC) $(CPPFLAGS) $(CFLAGS) -I$(srcdir)/tcc/include -I$(srcdir)/tcc/include -E - | awk -f $(srcdir)/headers.awk | while read src dst; do \
+			dst="$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include/$$dst"; \
+			if [ -e "$${dst}" ]; then continue; fi; \
+			dstdir="$$(dirname "$$dst")"; \
+			echo mkdir -p "$$dstdir"; \
+			mkdir -p "$$dstdir"; \
+			echo cp "$$src" "$$dst"; \
+			cp "$$src" "$$dst"; \
+		done
 
 clean:
 	rm -f tcltcc.o
