@@ -3,7 +3,7 @@ UTIL="tcc4tcl"
 
 # This is the name of output files that should exist after configure 
 # procedures.
-BINS="tcc4tcl.so"
+BINS="tcltcc.so"
 
 # This lists the name of files that are required to exist
 REQS="pkgIndex.tcl"
