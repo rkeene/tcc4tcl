@@ -1,0 +1,117 @@
+diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1tclio/libtcc.c
+--- tcc-0.9.26.orig/libtcc.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1tclio/libtcc.c	2014-05-01 19:32:19.383657630 -0500
+@@ -669,7 +669,7 @@
+     bf->line_num = 1;
+     bf->ifndef_macro = 0;
+     bf->ifdef_stack_ptr = s1->ifdef_stack_ptr;
+-    bf->fd = -1;
++    bf->fd = NULL;
+     bf->prev = file;
+     file = bf;
+ }
+@@ -677,26 +677,35 @@
+ ST_FUNC void tcc_close(void)
+ {
+     BufferedFile *bf = file;
+-    if (bf->fd > 0) {
+-        close(bf->fd);
++    if (bf->fd != NULL) {
++        Tcl_Close(NULL,bf->fd);
+         total_lines += bf->line_num;
+     }
+     file = bf->prev;
+     tcc_free(bf);
+ }
+ 
+-ST_FUNC int tcc_open(TCCState *s1, const char *filename)
++ST_FUNC Tcl_Channel tcc_open(TCCState *s1, const char *filename)
+ {
+-    int fd;
+-    if (strcmp(filename, "-") == 0)
+-        fd = 0, filename = "stdin";
+-    else
+-        fd = open(filename, O_RDONLY | O_BINARY);
+-    if ((s1->verbose == 2 && fd >= 0) || s1->verbose == 3)
+-        printf("%s %*s%s\n", fd < 0 ? "nf":"->",
++    Tcl_Channel fd;
++    Tcl_Obj *path;
++
++    if (strcmp(filename, "-") == 0) {
++        fd = Tcl_GetStdChannel(TCL_STDIN);
++        filename = "stdin";
++    } else {
++        path = Tcl_NewStringObj(filename,-1);
++        Tcl_IncrRefCount(path);
++        fd = Tcl_FSOpenFileChannel(NULL,path, "r", 0);
++        Tcl_DecrRefCount(path);
++    }
++
++    if ((s1->verbose == 2 && fd != NULL) || s1->verbose == 3)
++        printf("%s %*s%s\n", fd == NULL ? "nf":"->",
+                (int)(s1->include_stack_ptr - s1->include_stack), "", filename);
+-    if (fd < 0)
+-        return -1;
++    if (fd == NULL) {
++        return NULL;
++    }
+ 
+     tcc_open_bf(s1, filename, 0);
+     file->fd = fd;
+@@ -1099,7 +1108,8 @@
+ {
+     const char *ext;
+     ElfW(Ehdr) ehdr;
+-    int fd, ret, size;
++    int ret, size;
++    Tcl_Channel ret_chan, fd;
+ 
+     /* find source file type with extension */
+     ext = tcc_fileextension(filename);
+@@ -1113,11 +1123,11 @@
+ #endif
+ 
+     /* open the file */
+-    ret = tcc_open(s1, filename);
+-    if (ret < 0) {
++    ret_chan = tcc_open(s1, filename);
++    if (ret_chan == NULL) {
+         if (flags & AFF_PRINT_ERROR)
+             tcc_error_noabort("file '%s' not found", filename);
+-        return ret;
++        return -1;
+     }
+ 
+     /* update target deps */
+@@ -1151,8 +1161,8 @@
+ 
+     fd = file->fd;
+     /* assume executable format: auto guess file type */
+-    size = read(fd, &ehdr, sizeof(ehdr));
+-    lseek(fd, 0, SEEK_SET);
++    size = Tcl_Read(fd, (unsigned char *)&ehdr, sizeof(ehdr));
++    Tcl_Seek(fd, 0, SEEK_SET);
+     if (size <= 0) {
+         tcc_error_noabort("could not read header");
+         goto the_end;
+diff -uNr tcc-0.9.26.orig/tcc.h tcc-0.9.26-1tclio/tcc.h
+--- tcc-0.9.26.orig/tcc.h	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1tclio/tcc.h	2014-05-01 19:26:10.847265869 -0500
+@@ -429,7 +429,7 @@
+ typedef struct BufferedFile {
+     uint8_t *buf_ptr;
+     uint8_t *buf_end;
+-    int fd;
++    Tcl_Channel fd;
+     struct BufferedFile *prev;
+     int line_num;    /* current line number - here to simplify code */
+     int ifndef_macro;  /* #ifndef macro / #endif search */
+@@ -1045,7 +1045,7 @@
+ ST_FUNC Sym *global_identifier_push(int v, int t, int c);
+ 
+ ST_FUNC void tcc_open_bf(TCCState *s1, const char *filename, int initlen);
+-ST_FUNC int tcc_open(TCCState *s1, const char *filename);
++ST_FUNC Tcl_Channel tcc_open(TCCState *s1, const char *filename);
+ ST_FUNC void tcc_close(void);
+ 
+ ST_FUNC int tcc_add_file_internal(TCCState *s1, const char *filename, int flags);

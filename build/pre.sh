@@ -31,6 +31,11 @@ tcc_sha256='521e701ae436c302545c3f973a9c9b7e2694769c71d9be10f70a2460705b6d71'
 
 	rm -f "tcc-${tcc_version}.tar.bz2"
 
+	## Apply patches
+	for patchfile in ../build/tcc-patches/${tcc_version}/*.diff; do
+		( cd * && patch -p1 ) < "${patchfile}"
+	done
+
 	rm -rf ../tcc
 	mkdir ../tcc || exit 1
 	mv */* ../tcc/
