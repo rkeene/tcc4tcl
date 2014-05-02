@@ -141,3 +141,57 @@ diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1crosscompilefixes/configure
    --enable-mingw32         build windows version on linux with mingw32
    --enable-cygwin          build windows version on windows with cygwin
    --enable-cross           build cross compilers
+diff -uNr tcc-0.9.26.orig/lib/Makefile tcc-0.9.26-1crosscompilefixes/lib/Makefile
+--- tcc-0.9.26.orig/lib/Makefile	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1crosscompilefixes/lib/Makefile	2014-05-02 01:55:55.407140003 -0500
+@@ -47,24 +47,22 @@
+ ifeq "$(TARGET)" "i386-win32"
+  OBJ = $(addprefix $(DIR)/,$(WIN32_O))
+  TGT = -DTCC_TARGET_I386 -DTCC_TARGET_PE
+- XCC = $(TCC) -B$(top_srcdir)/win32 -I$(top_srcdir)/include
+- XAR = $(DIR)/tiny_libmaker$(EXESUF)
++ XCC = $(CC) -I$(top_srcdir)/win32 -I$(top_srcdir)/include
+ else
+ ifeq "$(TARGET)" "x86_64-win32"
+  OBJ = $(addprefix $(DIR)/,$(WIN64_O))
+  TGT = -DTCC_TARGET_X86_64 -DTCC_TARGET_PE
+- XCC = $(TCC) -B$(top_srcdir)/win32 -I$(top_srcdir)/include
+- XAR = $(DIR)/tiny_libmaker$(EXESUF)
++ XCC = $(CC) -I$(top_srcdir)/win32 -I$(top_srcdir)/include
+ else
+ ifeq "$(TARGET)" "i386"
+  OBJ = $(addprefix $(DIR)/,$(I386_O))
+  TGT = -DTCC_TARGET_I386
+- XCC ?= $(TCC) -B$(TOP)
++ XCC ?= $(CC) -I$(TOP)
+ else
+ ifeq "$(TARGET)" "x86_64"
+  OBJ = $(addprefix $(DIR)/,$(X86_64_O))
+  TGT = -DTCC_TARGET_X86_64
+- XCC ?= $(TCC) -B$(TOP)
++ XCC ?= $(CC) -I$(TOP)
+ else
+  $(error libtcc1.a not supported on target '$(TARGET)')
+ endif
+diff -uNr tcc-0.9.26.orig/win32/lib/crt1.c tcc-0.9.26-1crosscompilefixes/win32/lib/crt1.c
+--- tcc-0.9.26.orig/win32/lib/crt1.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1crosscompilefixes/win32/lib/crt1.c	2014-05-02 01:56:11.277140003 -0500
+@@ -19,7 +19,6 @@
+ 
+ int _start(void)
+ {
+-    __TRY__
+     int argc; char **argv; char **env; int ret;
+     _startupinfo start_info = {0};
+ 
+diff -uNr tcc-0.9.26.orig/win32/lib/wincrt1.c tcc-0.9.26-1crosscompilefixes/win32/lib/wincrt1.c
+--- tcc-0.9.26.orig/win32/lib/wincrt1.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1crosscompilefixes/win32/lib/wincrt1.c	2014-05-02 01:56:15.197140003 -0500
+@@ -11,7 +11,6 @@
+ 
+ int _winstart(void)
+ {
+-    __TRY__
+     char *szCmd;
+     STARTUPINFO startinfo;
+     int fShow;
