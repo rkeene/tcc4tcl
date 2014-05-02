@@ -10,18 +10,20 @@ INSTALL = @INSTALL@
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 TCL_PACKAGE_PATH = @TCL_PACKAGE_PATH@
+TCLCONFIGPATH = @TCLCONFIGPATH@
 PACKAGE_INSTALL_DIR = $(TCL_PACKAGE_PATH)/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
 TARGETS = @TARGETS@
+TCC_CONFIGURE_OPTS = --extra-cflags='$(CFLAGS)' --with-tcl=$(TCLCONFIGPATH)
 srcdir = @srcdir@
 
 all: $(TARGETS)
 
 tcc/config.h:
 	if [ "$(srcdir)" = "." ]; then \
-		cd tcc && ./configure; \
+		cd tcc && ./configure $(TCC_CONFIGURE_OPTS); \
 	else \
 		mkdir tcc >/dev/null 2>/dev/null; \
-		cd tcc && $(shell cd $(srcdir) && pwd)/tcc/configure; \
+		cd tcc && $(shell cd $(srcdir) && pwd)/tcc/configure $(TCC_CONFIGURE_OPTS); \
 	fi
 
 tcc/libtcc.a: tcc/config.h
@@ -34,7 +36,7 @@ tcltcc.o: $(srcdir)/tcltcc.c $(srcdir)/tcc/tcc.h $(srcdir)/tcc/libtcc.h tcc/conf
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o tcltcc.o -c $(srcdir)/tcltcc.c
 
 tcltcc.@SHOBJEXT@: tcltcc.o tcc/libtcc.a
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(SHOBJLDFLAGS) -o tcltcc.@SHOBJEXT@ tcltcc.o $(LIBS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(SHOBJLDFLAGS) -o tcltcc.@SHOBJEXT@ tcltcc.o tcc/libtcc.a $(LIBS)
 
 tcltcc-static.a: tcltcc.o tcc/libtcc.a
 	cp tcc/libtcc.a tcltcc-static.new.a

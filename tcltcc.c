@@ -20,6 +20,7 @@
  */
 
 #include <tcl.h>
+#include <stdlib.h>
 #include "tcc.h"
 
 struct TclTCCState {
@@ -38,19 +39,18 @@ static void TccCCommandDeleteProc (ClientData cdata) {
 	ts = (struct TclTCCState *) cdata;
 	s = ts->s;
 
-	Tcl_DecrRefCount(s->tcc_lib_path);
-
 	/* We can delete the compiler if the output was not to memory */
 	if (s->output_type != TCC_OUTPUT_MEMORY) {
 		tcc_delete(s);
 		ts->s = NULL;
 	}
 
-	free(ts);
+	ckfree((void *) ts);
 }
 
 static int TccHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Obj * CONST objv[]){
 	unsigned long val;
+	void *val_p;
 	int index;
 	int res;
 	struct TclTCCState *ts;
@@ -115,34 +115,39 @@ static int TccHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Ob
                 tcc_add_library_path(s, Tcl_GetString(objv[2]));
                 return TCL_OK;
             }
+#if 0
         case TCLTCC_ADD_SYMBOL:
             if (objc != 4) {
                 Tcl_WrongNumArgs(interp, 2, objv, "symbol value");
                 return TCL_ERROR;
             }
             Tcl_GetLongFromObj(interp,objv[3], &val);
+
             tcc_add_symbol(s,Tcl_GetString(objv[2]),val); 
             return TCL_OK; 
+#endif
         case TCLTCC_COMMAND:
             if (objc != 4) {
                 Tcl_WrongNumArgs(interp, 2, objv, "tclname cname");
                 return TCL_ERROR;
             }
             if (!ts->relocated) {     
-                if(tcc_relocate(s)!=0) {
+                if(tcc_relocate(s, TCC_RELOCATE_AUTO)!=0) {
                     Tcl_AppendResult(interp, "relocating failed", NULL);
                     return TCL_ERROR;
                 } else {
                     ts->relocated=1;
                 }
             }
-            if (tcc_get_symbol(s,&val,Tcl_GetString(objv[3]))!=0) {
+
+            val_p = tcc_get_symbol(s, Tcl_GetString(objv[3]));
+            if (val_p == NULL) {
 		    Tcl_AppendResult(interp, "symbol '", Tcl_GetString(objv[3]),"' not found", NULL);
 		    return TCL_ERROR;
 	    }
 
             /*printf("symbol: %x\n",val); */
-            Tcl_CreateObjCommand(interp,Tcl_GetString(objv[2]),(void *)val,NULL,NULL);
+            Tcl_CreateObjCommand(interp,Tcl_GetString(objv[2]),val_p,NULL,NULL);
             return TCL_OK;
         case TCLTCC_COMPILE:
             if(ts->relocated == 1) {
@@ -177,18 +182,19 @@ static int TccHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Ob
                 return TCL_ERROR;
             }
             if (!ts->relocated) {     
-                if(tcc_relocate(s)!=0) {
+                if(tcc_relocate(s, TCC_RELOCATE_AUTO)!=0) {
                     Tcl_AppendResult(interp, "relocating failed", NULL);
                     return TCL_ERROR;
                 } else {
                     ts->relocated=1;
                 }
             }
-            if(tcc_get_symbol(s,&val,Tcl_GetString(objv[2]))!=0) {
+            val_p = tcc_get_symbol(s,Tcl_GetString(objv[2]));
+            if(val_p == NULL) {
                 Tcl_AppendResult(interp, "symbol '", Tcl_GetString(objv[2]),"' not found", NULL);
                 return TCL_ERROR;
             }
-            sym_addr = Tcl_NewLongObj(val);
+            sym_addr = Tcl_NewWideIntObj((Tcl_WideInt) val_p);
             Tcl_SetObjResult(interp, sym_addr);
             return TCL_OK; 
         case TCLTCC_OUTPUT_FILE:
@@ -230,7 +236,7 @@ static int TccHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Ob
 } 
 
 static int TccCreateCmd( ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Obj * CONST objv[]){
-	struct TclTCCState *ts
+	struct TclTCCState *ts;
 	TCCState *s;
     	int index;
 	static CONST char *types[] = {
@@ -250,28 +256,33 @@ static int TccCreateCmd( ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Obj
 		}
 	}
 
-	s = tcc_new(objv[1]);
+	s = tcc_new();
+	if (s == NULL) {
+		return(TCL_ERROR);
+	}
+
 	tcc_set_error_func(s, interp, (void *)&TccErrorFunc);
 
-	ts = malloc(sizeof(*ts));
+	ts = (void *) ckalloc(sizeof(*ts));
 	ts->s = s;
     	ts->relocated = 0;
 
 	/*printf("type: %d\n", index); */
 	tcc_set_output_type(s,index);
-	Tcl_CreateObjCommand(interp,Tcl_GetString(objv[objc-1]),TccHandleCmd,s,TccCCommandDeleteProc);
+	Tcl_CreateObjCommand(interp,Tcl_GetString(objv[objc-1]),TccHandleCmd,ts,TccCCommandDeleteProc);
 
 	return TCL_OK;
 }
 
-DLL_EXPORT int Tcc_Init(Tcl_Interp *interp) {
+int Tcc4tcl_Init(Tcl_Interp *interp) {
 #ifdef TCL_USE_STUBS
 	if (Tcl_InitStubs(interp, "8.4" , 0) == 0L) {
 		return TCL_ERROR;
 	}
 #endif
-	Tcl_CreateObjCommand(interp,PACKAGE_NAME,TccCreateCmd,NULL,NULL);
-	Tcl_PkgProvide(interp,PACKAGE_NAME,PACKAGE_VERSION);
+
+	Tcl_CreateObjCommand(interp, PACKAGE_NAME, TccCreateCmd, NULL, NULL);
+	Tcl_PkgProvide(interp, PACKAGE_NAME, PACKAGE_VERSION);
 
 	return TCL_OK;
 }
