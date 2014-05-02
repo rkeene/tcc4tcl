@@ -28,11 +28,11 @@ struct TclTCCState {
 	int relocated;
 };
 
-static void TccErrorFunc(Tcl_Interp * interp, char * msg) {
+static void Tcc4tclErrorFunc(Tcl_Interp * interp, char * msg) {
 	Tcl_AppendResult(interp, msg, "\n", NULL);
 }
 
-static void TccCCommandDeleteProc (ClientData cdata) {
+static void Tcc4tclCCommandDeleteProc (ClientData cdata) {
 	struct TclTCCState *ts;
 	TCCState *s ;
 
@@ -48,7 +48,7 @@ static void TccCCommandDeleteProc (ClientData cdata) {
 	ckfree((void *) ts);
 }
 
-static int TccHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Obj * CONST objv[]){
+static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Obj * CONST objv[]){
 	unsigned long val;
 	void *val_p;
 	int index;
@@ -231,7 +231,7 @@ static int TccHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Ob
     return TCL_OK;
 } 
 
-static int TccCreateCmd( ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Obj * CONST objv[]){
+static int Tcc4tclCreateCmd( ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Obj * CONST objv[]){
 	struct TclTCCState *ts;
 	TCCState *s;
     	int index;
@@ -259,7 +259,7 @@ static int TccCreateCmd( ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Obj
 
 	s->tcc_lib_path = tcc_strdup(Tcl_GetString(objv[1]));
 
-	tcc_set_error_func(s, interp, (void *)&TccErrorFunc);
+	tcc_set_error_func(s, interp, (void *)&Tcc4tclErrorFunc);
 
 	ts = (void *) ckalloc(sizeof(*ts));
 	ts->s = s;
@@ -267,19 +267,19 @@ static int TccCreateCmd( ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Obj
 
 	/*printf("type: %d\n", index); */
 	tcc_set_output_type(s,index);
-	Tcl_CreateObjCommand(interp,Tcl_GetString(objv[objc-1]),TccHandleCmd,ts,TccCCommandDeleteProc);
+	Tcl_CreateObjCommand(interp,Tcl_GetString(objv[objc-1]),Tcc4tclHandleCmd,ts,Tcc4tclCCommandDeleteProc);
 
 	return TCL_OK;
 }
 
 int Tcc4tcl_Init(Tcl_Interp *interp) {
-#ifdef TCL_USE_STUBS
+#ifdef USE_TCL_STUBS
 	if (Tcl_InitStubs(interp, "8.4" , 0) == 0L) {
 		return TCL_ERROR;
 	}
 #endif
 
-	Tcl_CreateObjCommand(interp, PACKAGE_NAME, TccCreateCmd, NULL, NULL);
+	Tcl_CreateObjCommand(interp, PACKAGE_NAME, Tcc4tclCreateCmd, NULL, NULL);
 	Tcl_PkgProvide(interp, PACKAGE_NAME, PACKAGE_VERSION);
 
 	return TCL_OK;
