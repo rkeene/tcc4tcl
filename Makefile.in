@@ -46,9 +46,11 @@ tcltcc-static.a: tcltcc.o tcc/libtcc.a
 
 install: $(TARGETS) pkgIndex.tcl tcc/libtcc1.a
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
+	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib"
+	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include"
 	$(INSTALL) -m 0755 $(TARGETS) "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -m 0644 pkgIndex.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
-	$(INSTALL) -m 0644 tcc/libtcc1.a "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
+	$(INSTALL) -m 0644 tcc/libtcc1.a "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib"
 
 clean:
 	rm -f tcltcc.o
