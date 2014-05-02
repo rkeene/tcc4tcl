@@ -210,11 +210,7 @@ static int TccHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Ob
                 Tcl_AppendResult(interp, "output_type memory not valid for output to file", NULL);
                 return TCL_ERROR;
             }
-#ifdef WIN32
-            res = tcc_output_pe(s,Tcl_GetString(objv[2]));
-#else
             res = tcc_output_file(s,Tcl_GetString(objv[2]));
-#endif
 
             if (res!=0) {
                 Tcl_AppendResult(interp, "output to file failed", NULL);
