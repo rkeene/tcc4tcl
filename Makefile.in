@@ -42,9 +42,6 @@ tcltcc-static.a: tcltcc.o tcc/libtcc.a
 	-$(RANLIB) tcltcc-static.new.a
 	mv tcltcc-static.new.a tcltcc-static.a
 
-pkgIndex.tcl: pkgIndex.tcl.tmpl
-	if [ "${TARGETS}" = 'tcltcc-static.a' ]; then awk '/^STATIC:/{ $$1 = ""; print }'; else awk '/^SHARED:/{ $$1 = ""; print }'; fi < pkgIndex.tcl.tmpl | sed 's@^ @@' > pkgIndex.tcl
-
 install: $(TARGETS) pkgIndex.tcl tcc/libtcc1.a
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -m 0755 $(TARGETS) "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
@@ -60,7 +57,7 @@ clean:
 distclean: clean
 	rm -rf autom4te.cache
 	rm -f config.log config.status
-	rm -f pkgIndex.tcl pkgIndex.tcl.tmpl
+	rm -f pkgIndex.tcl
 	rm -f Makefile
 	-$(MAKE) -C tcc distclean
 

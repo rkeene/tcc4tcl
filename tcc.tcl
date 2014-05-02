@@ -13,11 +13,7 @@ namespace eval tcc {
       catch { load {} tcc }
    }
    if {[info command ::tcc] == ""} {
-       switch -exact -- $::tcl_platform(platform) {
-	       windows { load $dir/tcc04.dll tcc }
-	       unix { load $dir/libtcc0.4.so tcc }
-	       default {error "unsupport platform"}
-       }
+       load [file join $dir tcctcl[info sharedlibextension]] tcc
    }
    set libs $dir/lib
    set includes $dir/include

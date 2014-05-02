@@ -41,4 +41,4 @@ dnl Perform Tcl Extension required stuff
 TCLEXT_INIT
 
 dnl Produce output
-AC_OUTPUT(Makefile pkgIndex.tcl.tmpl)
+AC_OUTPUT(Makefile pkgIndex.tcl)

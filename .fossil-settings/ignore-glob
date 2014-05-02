@@ -10,5 +10,4 @@ configure
 install-sh
 Makefile
 pkgIndex.tcl
-pkgIndex.tcl.tmpl
 tcc/*
