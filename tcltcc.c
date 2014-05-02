@@ -261,6 +261,8 @@ static int TccCreateCmd( ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Obj
 		return(TCL_ERROR);
 	}
 
+	s->tcc_lib_path = Tcl_GetString(objv[1]);
+
 	tcc_set_error_func(s, interp, (void *)&TccErrorFunc);
 
 	ts = (void *) ckalloc(sizeof(*ts));

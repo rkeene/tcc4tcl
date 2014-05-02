@@ -1,6 +1,6 @@
 diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1tclio/libtcc.c
 --- tcc-0.9.26.orig/libtcc.c	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1tclio/libtcc.c	2014-05-01 20:13:50.626814210 -0500
++++ tcc-0.9.26-1tclio/libtcc.c	2014-05-01 21:14:22.272599405 -0500
 @@ -669,7 +669,7 @@
      bf->line_num = 1;
      bf->ifndef_macro = 0;
@@ -97,7 +97,7 @@ diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1tclio/libtcc.c
          goto the_end;
 diff -uNr tcc-0.9.26.orig/tcc.h tcc-0.9.26-1tclio/tcc.h
 --- tcc-0.9.26.orig/tcc.h	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1tclio/tcc.h	2014-05-01 19:55:39.093986611 -0500
++++ tcc-0.9.26-1tclio/tcc.h	2014-05-01 21:14:22.294602204 -0500
 @@ -429,7 +429,7 @@
  typedef struct BufferedFile {
      uint8_t *buf_ptr;
@@ -156,7 +156,7 @@ diff -uNr tcc-0.9.26.orig/tcc.h tcc-0.9.26-1tclio/tcc.h
  ST_FUNC SValue *pe_getimport(SValue *sv, SValue *v2);
 diff -uNr tcc-0.9.26.orig/tcccoff.c tcc-0.9.26-1tclio/tcccoff.c
 --- tcc-0.9.26.orig/tcccoff.c	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1tclio/tcccoff.c	2014-05-01 20:02:37.695836363 -0500
++++ tcc-0.9.26-1tclio/tcccoff.c	2014-05-01 21:14:22.295602331 -0500
 @@ -858,10 +858,11 @@
      return 0;
  }
@@ -188,7 +188,7 @@ diff -uNr tcc-0.9.26.orig/tcccoff.c tcc-0.9.26-1tclio/tcccoff.c
      }
 diff -uNr tcc-0.9.26.orig/tccelf.c tcc-0.9.26-1tclio/tccelf.c
 --- tcc-0.9.26.orig/tccelf.c	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1tclio/tccelf.c	2014-05-01 20:14:26.278515126 -0500
++++ tcc-0.9.26-1tclio/tccelf.c	2014-05-01 21:14:22.301603094 -0500
 @@ -2334,13 +2334,13 @@
      return ret;
  }
@@ -323,7 +323,7 @@ diff -uNr tcc-0.9.26.orig/tccelf.c tcc-0.9.26-1tclio/tccelf.c
      if (ehdr.e_ident[5] != ELFDATA2LSB ||
 diff -uNr tcc-0.9.26.orig/tccpe.c tcc-0.9.26-1tclio/tccpe.c
 --- tcc-0.9.26.orig/tccpe.c	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1tclio/tccpe.c	2014-05-01 20:09:11.572909155 -0500
++++ tcc-0.9.26-1tclio/tccpe.c	2014-05-01 21:14:22.302603222 -0500
 @@ -1505,10 +1505,10 @@
  
  /* ------------------------------------------------------------- */
@@ -390,7 +390,7 @@ diff -uNr tcc-0.9.26.orig/tccpe.c tcc-0.9.26-1tclio/tccpe.c
      char buf[10];
 diff -uNr tcc-0.9.26.orig/tccpp.c tcc-0.9.26-1tclio/tccpp.c
 --- tcc-0.9.26.orig/tccpp.c	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1tclio/tccpp.c	2014-05-01 20:12:26.967021662 -0500
++++ tcc-0.9.26-1tclio/tccpp.c	2014-05-01 22:25:10.373511188 -0500
 @@ -360,13 +360,13 @@
      int len;
      /* only tries to read if really end of buffer */
@@ -407,3 +407,12 @@ diff -uNr tcc-0.9.26.orig/tccpp.c tcc-0.9.26-1tclio/tccpp.c
              if (len < 0)
                  len = 0;
          } else {
+@@ -1484,7 +1484,7 @@
+                 goto include_done;
+             }
+ 
+-            if (tcc_open(s1, buf1) < 0)
++            if (tcc_open(s1, buf1) == NULL)
+ include_trynext:
+                 continue;
+ 
