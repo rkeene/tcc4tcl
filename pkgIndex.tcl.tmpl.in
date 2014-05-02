@@ -1,0 +1,2 @@
+STATIC: package ifneeded tcc4tcl @PACKAGE_VERSION@ [list source [file join $dir tcc.tcl]]
+SHARED: package ifneeded tcc4tcl @PACKAGE_VERSION@ [list load [file join $dir tcc4tcl.@SHOBJEXT@]]\;\ [list source [file join $dir tcc.tcl]]

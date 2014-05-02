@@ -27,11 +27,14 @@ tcc/config.h:
 tcc/libtcc.a: tcc/config.h
 	$(MAKE) -C tcc libtcc.a
 
+tcc/libtcc1.a: tcc/config.h
+	$(MAKE) -C tcc libtcc1.a
+
 tcltcc.o: $(srcdir)/tcltcc.c $(srcdir)/tcc/tcc.h $(srcdir)/tcc/libtcc.h tcc/config.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o tcltcc.o -c $(srcdir)/tcltcc.c
 
-tcltcc-shared.@SHOBJEXT@: tcltcc.o tcc/libtcc.a
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(SHOBJLDFLAGS) -o tcltcc-shared.@SHOBJEXT@ tcltcc.o $(LIBS)
+tcltcc.@SHOBJEXT@: tcltcc.o tcc/libtcc.a
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(SHOBJLDFLAGS) -o tcltcc.@SHOBJEXT@ tcltcc.o $(LIBS)
 
 tcltcc-static.a: tcltcc.o tcc/libtcc.a
 	cp tcc/libtcc.a tcltcc-static.new.a
@@ -39,21 +42,25 @@ tcltcc-static.a: tcltcc.o tcc/libtcc.a
 	-$(RANLIB) tcltcc-static.new.a
 	mv tcltcc-static.new.a tcltcc-static.a
 
-install: $(TARGETS) pkgIndex.tcl
+pkgIndex.tcl: pkgIndex.tcl.tmpl
+	if [ "${TARGETS}" = 'tcltcc-static.a' ]; then awk '/^STATIC:/{ $$1 = ""; print }'; else awk '/^SHARED:/{ $$1 = ""; print }'; fi < pkgIndex.tcl.tmpl | sed 's@^ @@' > pkgIndex.tcl
+
+install: $(TARGETS) pkgIndex.tcl tcc/libtcc1.a
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
-	$(INSTALL) -m 0644 pkgIndex.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -m 0755 $(TARGETS) "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
+	$(INSTALL) -m 0644 pkgIndex.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
+	$(INSTALL) -m 0644 tcc/libtcc1.a "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 
 clean:
 	rm -f tcltcc.o
-	rm -f tcltcc-shared.@SHOBJEXT@ tcltcc-static.a
-	rm -f tcltcc-shared.@SHOBJEXT@.a tcltcc-shared.@SHOBJEXT@.def
+	rm -f tcltcc.@SHOBJEXT@ tcltcc-static.a
+	rm -f tcltcc.@SHOBJEXT@.a tcltcc.@SHOBJEXT@.def
 	-$(MAKE) -C tcc clean
 
 distclean: clean
 	rm -rf autom4te.cache
 	rm -f config.log config.status
-	rm -f pkgIndex.tcl
+	rm -f pkgIndex.tcl pkgIndex.tcl.tmpl
 	rm -f Makefile
 	-$(MAKE) -C tcc distclean
 

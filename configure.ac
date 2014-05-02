@@ -22,7 +22,7 @@ if test "${target}" = "shared"; then
 	dnl Determine how to make shared objects
 	DC_GET_SHOBJFLAGS
 
-	TARGETS="tcltcc-shared.${SHOBJEXT}"
+	TARGETS="tcltcc.${SHOBJEXT}"
 else
 	TARGETS="tcltcc-static.a"
 fi
@@ -41,4 +41,4 @@ dnl Perform Tcl Extension required stuff
 TCLEXT_INIT
 
 dnl Produce output
-AC_OUTPUT(Makefile pkgIndex.tcl)
+AC_OUTPUT(Makefile pkgIndex.tcl.tmpl)
