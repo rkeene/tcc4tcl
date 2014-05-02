@@ -21,7 +21,15 @@ AC_ARG_ENABLE([static], AS_HELP_STRING([--enable-static], [build static library 
 	TCC4TCL_TARGET=shared
 ])
 
+dnl Configure TCC build options
+AC_SUBST(TCC_CONFIGURE_OPTS)
 TCC_CONFIGURE_OPTS=""
+
+dnl -- If cross-compiling, specify a "--cross-prefix" and define the CPU
+if test "${host}" != "${build}"; then
+	TCC_CONFIGURE_OPTS="${TCC_CONFIGURE_OPTS} --cross-prefix=${host_alias}- --cpu=${host_cpu} --os=${host_os}"
+fi
+
 if test "${TCC4TCL_TARGET}" = "shared"; then
 	dnl Determine how to make shared objects
 	DC_GET_SHOBJFLAGS
@@ -36,7 +44,6 @@ else
 fi
 AC_SUBST(TARGET)
 AC_SUBST(TCC4TCL_TARGET)
-AC_SUBST(TCC_CONFIGURE_OPTS)
 
 dnl Find out if we have the functions needed to open shared objects
 AC_SEARCH_LIBS(dlopen, dl,, [
