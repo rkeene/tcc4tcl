@@ -22,6 +22,10 @@ if test "${target}" = "shared"; then
 	dnl Determine how to make shared objects
 	DC_GET_SHOBJFLAGS
 
+	dnl Only export symbols we wish to expose
+	DC_SETVERSIONSCRIPT([tcltcc.syms], [tcltcc.vers])
+	DC_FIND_STRIP_AND_REMOVESYMS([tcltcc.syms])
+
 	TARGETS="tcltcc.${SHOBJEXT}"
 else
 	TARGETS="tcltcc-static.a"
@@ -41,4 +45,4 @@ dnl Perform Tcl Extension required stuff
 TCLEXT_INIT
 
 dnl Produce output
-AC_OUTPUT(Makefile pkgIndex.tcl)
+AC_OUTPUT(Makefile pkgIndex.tcl tcltcc.syms)

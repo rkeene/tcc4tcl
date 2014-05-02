@@ -13,7 +13,7 @@ TCL_PACKAGE_PATH = @TCL_PACKAGE_PATH@
 TCLCONFIGPATH = @TCLCONFIGPATH@
 PACKAGE_INSTALL_DIR = $(TCL_PACKAGE_PATH)/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
 TARGETS = @TARGETS@
-TCC_CONFIGURE_OPTS = --extra-cflags='$(CFLAGS)' --with-tcl=$(TCLCONFIGPATH)
+TCC_CONFIGURE_OPTS = --extra-cflags='$(CPPFLAGS) $(CFLAGS)' --with-tcl=$(TCLCONFIGPATH)
 srcdir = @srcdir@
 
 all: $(TARGETS)
@@ -37,6 +37,8 @@ tcltcc.o: $(srcdir)/tcltcc.c $(srcdir)/tcc/tcc.h $(srcdir)/tcc/libtcc.h tcc/conf
 
 tcltcc.@SHOBJEXT@: tcltcc.o tcc/libtcc.a
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(SHOBJLDFLAGS) -o tcltcc.@SHOBJEXT@ tcltcc.o tcc/libtcc.a $(LIBS)
+	-@WEAKENSYMS@ tcltcc.@SHOBJEXT@
+	-@REMOVESYMS@ tcltcc.@SHOBJEXT@
 
 tcltcc-static.a: tcltcc.o tcc/libtcc.a
 	cp tcc/libtcc.a tcltcc-static.new.a
@@ -63,7 +65,7 @@ clean:
 distclean: clean
 	rm -rf autom4te.cache
 	rm -f config.log config.status
-	rm -f pkgIndex.tcl
+	rm -f pkgIndex.tcl tcltcc.syms tcltcc.vers
 	rm -f Makefile
 	-$(MAKE) -C tcc distclean
 

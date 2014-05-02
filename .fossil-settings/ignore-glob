@@ -16,3 +16,5 @@ tcltcc.o
 tcltcc-static.a
 tcltcc.so
 tcltcc.sl
+tcltcc.syms
+tcltcc.vers
