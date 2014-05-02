@@ -6,7 +6,7 @@
 
 	destfile = file;
 	if (!gsub(/^.*\/include\//, "", destfile)) {
-		if (!gsub(/^.*\/include-fixed\//, "", destfile)) {
+		if (!gsub(/^.*\/include-fixed\//, "fix/", destfile)) {
 			next
 		}
 	}
