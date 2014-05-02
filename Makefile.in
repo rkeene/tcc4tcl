@@ -5,6 +5,7 @@ libdir = @libdir@
 TARGET = @TARGET@
 
 CC = @CC@
+CPP = @CPP@
 AR = @AR@
 RANLIB = @RANLIB@
 CFLAGS = @CFLAGS@ @SHOBJFLAGS@
@@ -65,12 +66,12 @@ install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc.tcl tcc/libtcc1.a $(shell echo $(s
 	$(INSTALL) -m 0644 $(srcdir)/tcc.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -m 0644 tcc/libtcc1.a "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib"
 	$(INSTALL) -m 0644 $(shell echo $(srcdir)/tcc/include/*) "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include"
-	@if [ "$(host_os)" = "mingw32msvc" ]; then \
+	@if ! echo "_WIN32" | $(CPP) $(CPPFLAGS) - | grep '^_WIN32$$' >/dev/null; then \
 		echo cp -r $(srcdir)/tcc/win32/include/* "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include/"; \
 		cp -r $(srcdir)/tcc/win32/include/* "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include/"; \
 	fi
 	( for file in tcl.h limits.h unistd.h; do echo "#include <$${file}>"; done ) | \
-		$(CC) $(CPPFLAGS) $(CFLAGS) -I$(srcdir)/tcc/include -I$(srcdir)/tcc/include -E - | awk -f $(srcdir)/headers.awk | while read src dst; do \
+		$(CPP) $(CPPFLAGS) $(CFLAGS) -I$(srcdir)/tcc/include -I$(srcdir)/tcc/include - | awk -f $(srcdir)/headers.awk | while read src dst; do \
 			dst="$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include/$$dst"; \
 			if [ -e "$${dst}" ]; then continue; fi; \
 			dstdir="$$(dirname "$$dst")"; \
