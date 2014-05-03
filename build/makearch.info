@@ -40,4 +40,4 @@ BEFORE="build/pre.sh"
 AFTER=""
 
 # Files matching these (space-seperated) patterns are deleted
-TMPS="*.out HEADER build work"
+TMPS="*.out HEADER build work INST"

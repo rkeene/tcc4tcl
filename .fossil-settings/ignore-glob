@@ -12,9 +12,11 @@ Makefile
 pkgIndex.tcl
 tcc/*
 work/*
-tcltcc.o
-tcltcc-static.a
-tcltcc.so
-tcltcc.sl
-tcltcc.syms
-tcltcc.vers
+INST/*
+tcc4tcl.o
+tcc4tcl-static.a
+tcc4tcl.so
+tcc4tcl.sl
+tcc4tcl.dylib
+tcc4tcl.syms
+tcc4tcl.vers
