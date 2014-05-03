@@ -6,7 +6,8 @@ UTIL="tcc4tcl"
 BINS="tcc4tcl.so"
 
 # This lists the name of files that are required to exist
-REQS="pkgIndex.tcl"
+## TEST-STATUS is only created if "make test" succeeds
+REQS="pkgIndex.tcl TEST-STATUS"
 
 # Version of utility, if empty it will be guessed.
 # If set to "auto" it will be maintained in a file called .version

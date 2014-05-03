@@ -1,0 +1,6 @@
+#! /usr/bin/env tclsh
+
+source tcc4tcl.tcl
+tcc4tcl::cproc test {int i} int { return(i+42); }
+tcc4tcl::cproc test1 {int i} int { return(i+42); }
+puts [test 1]

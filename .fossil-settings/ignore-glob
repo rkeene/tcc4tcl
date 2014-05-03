@@ -20,3 +20,5 @@ tcc4tcl.sl
 tcc4tcl.dylib
 tcc4tcl.syms
 tcc4tcl.vers
+TEST-STATUS
+__TMP__

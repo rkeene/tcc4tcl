@@ -82,10 +82,17 @@ install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc4tcl.tcl tcc/libtcc1.a $(shell echo
 			cp "$$src" "$$dst"; \
 		done
 
+test:
+	rm -rf __TMP__
+	$(MAKE) install tcllibdir=$(shell pwd)/__TMP__
+	cd __TMP__/* && ../../test
+	echo Tests Completed OK > TEST-STATUS
+
 clean:
 	rm -f tcc4tcl.o
 	rm -f tcc4tcl.@SHOBJEXT@ tcc4tcl-static.a
 	rm -f tcc4tcl.@SHOBJEXT@.a tcc4tcl.@SHOBJEXT@.def
+	rm -f TEST-STATUS
 	-$(MAKE) -C tcc clean
 
 distclean: clean
@@ -101,4 +108,4 @@ mrproper: distclean
 	rm -f configure aclocal.m4
 	rm -f config.guess config.sub install-sh
 
-.PHONY: all install clean distclean mrproper
+.PHONY: all install test clean distclean mrproper
