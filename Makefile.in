@@ -23,6 +23,7 @@ TCL_PACKAGE_PATH = @TCL_PACKAGE_PATH@
 tcllibdir = $(shell if echo "$(libdir)" | grep '^UNSPECIFIED' >/dev/null; then echo $(TCL_PACKAGE_PATH); else echo "$(libdir)"; fi)
 PACKAGE_INSTALL_DIR = $(tcllibdir)/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
 TCC_CONFIGURE_OPTS = --extra-cflags='$(CPPFLAGS) $(CFLAGS)' --with-tcl=$(TCLCONFIGPATH) --sysincludepaths='{B}/include' --libpaths='{B}/lib' @TCC_CONFIGURE_OPTS@
+INSTALL_HEADERS = tcl.h assert.h ctype.h errno.h float.h limits.h locale.h math.h setjmp.h signal.h stdarg.h stddef.h stdint.h stdio.h stdlib.h string.h time.h wctype.h
 srcdir = @srcdir@
 host_os = @host_os@
 @SET_MAKE@
@@ -70,7 +71,7 @@ install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc4tcl.tcl tcc/libtcc1.a $(shell echo
 		echo cp -r $(srcdir)/tcc/win32/include/* "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include/"; \
 		cp -r $(srcdir)/tcc/win32/include/* "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include/"; \
 	fi
-	( for file in tcl.h limits.h unistd.h; do echo "#include <$${file}>"; done ) | \
+	( for file in $(INSTALL_HEADERS); do echo "#include <$${file}>"; done ) | \
 		$(CPP) $(CPPFLAGS) $(CFLAGS) -I$(srcdir)/tcc/include -I$(srcdir)/tcc/include - | awk -f $(srcdir)/headers.awk | while read src dst; do \
 			dst="$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include/$$dst"; \
 			if [ -e "$${dst}" ]; then continue; fi; \
