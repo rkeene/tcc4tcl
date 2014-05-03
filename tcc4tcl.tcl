@@ -13,7 +13,7 @@ namespace eval tcc4tcl {
       catch { load {} tcc4tcl }
    }
    if {[info command ::tcc4tcl] == ""} {
-       load [file join $dir tcltcc[info sharedlibextension]] tcc4tcl
+       load [file join $dir tcc4tcl[info sharedlibextension]] tcc4tcl
    }
    set libs $dir/lib
    set includes $dir/include

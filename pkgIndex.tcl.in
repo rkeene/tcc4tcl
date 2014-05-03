@@ -1,1 +1,1 @@
-package ifneeded tcc4tcl @PACKAGE_VERSION@ [list source [file join $dir tcc.tcl]]
+package ifneeded tcc4tcl @PACKAGE_VERSION@ [list source [file join $dir tcc4tcl.tcl]]

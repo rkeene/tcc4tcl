@@ -43,27 +43,27 @@ tcc/libtcc.a: tcc/config.h
 tcc/libtcc1.a: tcc/config.h
 	$(MAKE) -C tcc libtcc1.a
 
-tcltcc.o: $(srcdir)/tcltcc.c $(srcdir)/tcc/tcc.h $(srcdir)/tcc/libtcc.h tcc/config.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o tcltcc.o -c $(srcdir)/tcltcc.c
+tcc4tcl.o: $(srcdir)/tcc4tcl.c $(srcdir)/tcc/tcc.h $(srcdir)/tcc/libtcc.h tcc/config.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o tcc4tcl.o -c $(srcdir)/tcc4tcl.c
 
-tcltcc.@SHOBJEXT@: tcltcc.o tcc/libtcc.a
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(SHOBJLDFLAGS) -o tcltcc.@SHOBJEXT@ tcltcc.o tcc/libtcc.a $(LIBS)
-	-@WEAKENSYMS@ tcltcc.@SHOBJEXT@
-	-@REMOVESYMS@ tcltcc.@SHOBJEXT@
+tcc4tcl.@SHOBJEXT@: tcc4tcl.o tcc/libtcc.a
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(SHOBJLDFLAGS) -o tcc4tcl.@SHOBJEXT@ tcc4tcl.o tcc/libtcc.a $(LIBS)
+	-@WEAKENSYMS@ tcc4tcl.@SHOBJEXT@
+	-@REMOVESYMS@ tcc4tcl.@SHOBJEXT@
 
-tcltcc-static.a: tcltcc.o tcc/libtcc.a
-	cp tcc/libtcc.a tcltcc-static.new.a
-	$(AR) rcu tcltcc-static.new.a tcltcc.o
-	-$(RANLIB) tcltcc-static.new.a
-	mv tcltcc-static.new.a tcltcc-static.a
+tcc4tcl-static.a: tcc4tcl.o tcc/libtcc.a
+	cp tcc/libtcc.a tcc4tcl-static.new.a
+	$(AR) rcu tcc4tcl-static.new.a tcc4tcl.o
+	-$(RANLIB) tcc4tcl-static.new.a
+	mv tcc4tcl-static.new.a tcc4tcl-static.a
 
-install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc.tcl tcc/libtcc1.a $(shell echo $(srcdir)/tcc/include/*) $(srcdir)/headers.awk
+install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc4tcl.tcl tcc/libtcc1.a $(shell echo $(srcdir)/tcc/include/*) $(srcdir)/headers.awk
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib"
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include"
 	$(INSTALL) -m 0755 $(TARGET) "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -m 0644 pkgIndex.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
-	$(INSTALL) -m 0644 $(srcdir)/tcc.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
+	$(INSTALL) -m 0644 $(srcdir)/tcc4tcl.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -m 0644 tcc/libtcc1.a "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib"
 	$(INSTALL) -m 0644 $(shell echo $(srcdir)/tcc/include/*) "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include"
 	@if ! echo "_WIN32" | $(CPP) $(CPPFLAGS) - | grep '^_WIN32$$' >/dev/null; then \
@@ -82,15 +82,15 @@ install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc.tcl tcc/libtcc1.a $(shell echo $(s
 		done
 
 clean:
-	rm -f tcltcc.o
-	rm -f tcltcc.@SHOBJEXT@ tcltcc-static.a
-	rm -f tcltcc.@SHOBJEXT@.a tcltcc.@SHOBJEXT@.def
+	rm -f tcc4tcl.o
+	rm -f tcc4tcl.@SHOBJEXT@ tcc4tcl-static.a
+	rm -f tcc4tcl.@SHOBJEXT@.a tcc4tcl.@SHOBJEXT@.def
 	-$(MAKE) -C tcc clean
 
 distclean: clean
 	rm -rf autom4te.cache
 	rm -f config.log config.status
-	rm -f pkgIndex.tcl tcltcc.syms tcltcc.vers
+	rm -f pkgIndex.tcl tcc4tcl.syms tcc4tcl.vers
 	rm -f Makefile
 	-$(MAKE) -C tcc distclean
 

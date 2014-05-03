@@ -35,12 +35,12 @@ if test "${TCC4TCL_TARGET}" = "shared"; then
 	DC_GET_SHOBJFLAGS
 
 	dnl Only export symbols we wish to expose
-	DC_SETVERSIONSCRIPT([tcltcc.syms], [tcltcc.vers])
-	DC_FIND_STRIP_AND_REMOVESYMS([tcltcc.syms])
+	DC_SETVERSIONSCRIPT([tcc4tcl.syms], [tcc4tcl.vers])
+	DC_FIND_STRIP_AND_REMOVESYMS([tcc4tcl.syms])
 
-	TARGET="tcltcc.${SHOBJEXT}"
+	TARGET="tcc4tcl.${SHOBJEXT}"
 else
-	TARGET="tcltcc-static.a"
+	TARGET="tcc4tcl-static.a"
 fi
 AC_SUBST(TARGET)
 AC_SUBST(TCC4TCL_TARGET)
@@ -58,4 +58,4 @@ dnl Perform Tcl Extension required stuff
 TCLEXT_INIT
 
 dnl Produce output
-AC_OUTPUT(Makefile pkgIndex.tcl tcltcc.syms)
+AC_OUTPUT(Makefile pkgIndex.tcl tcc4tcl.syms)
