@@ -89,16 +89,17 @@ test:
 	$(MAKE) install tcllibdir=$(shell pwd)/__TMP__
 	cd __TMP__/* && ../../test
 	echo Tests Completed OK > TEST-STATUS
+	rm -rf __TMP__
 
 clean:
 	rm -f tcc4tcl.o
 	rm -f tcc4tcl.@SHOBJEXT@ tcc4tcl-static.a
 	rm -f tcc4tcl.@SHOBJEXT@.a tcc4tcl.@SHOBJEXT@.def
+	rm -rf __TMP__
 	rm -f TEST-STATUS
 	-$(MAKE) -C tcc clean
 
 distclean: clean
-	rm -rf __TMP__
 	rm -rf autom4te.cache
 	rm -f config.log config.status
 	rm -f pkgIndex.tcl tcc4tcl.syms tcc4tcl.vers
