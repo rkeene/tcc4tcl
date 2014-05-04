@@ -95,7 +95,7 @@ proc ::tcc4tcl::cc {code} {
   variable tcc
   if {![info exists tcc(cc)]} {
       set tcc(cc) tcc1
-      tcc4tcl [file join $::tcc4tcl::dir lib] $tcc(cc)
+      tcc4tcl $::tcc4tcl::dir $tcc(cc)
       $tcc(cc) add_library tcl8.5
       $tcc(cc) add_include_path [file join $::tcc4tcl::dir include]
   }

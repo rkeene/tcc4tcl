@@ -1,0 +1,32 @@
+Binary files tcc-0.9.26.orig/.tccelf.c.swp and tcc-0.9.26-1elfsearchforlibtcc/.tccelf.c.swp differ
+diff -uNr tcc-0.9.26.orig/tccelf.c tcc-0.9.26-1elfsearchforlibtcc/tccelf.c
+--- tcc-0.9.26.orig/tccelf.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1elfsearchforlibtcc/tccelf.c	2014-05-03 23:24:08.325640003 -0500
+@@ -1349,7 +1349,27 @@
+ static inline int tcc_add_support(TCCState *s1, const char *filename)
+ {
+     char buf[1024];
++    char *path;
++    void *check;
++    int i;
++
+     snprintf(buf, sizeof(buf), "%s/%s", s1->tcc_lib_path, filename);
++    check = tcc_open(s1, buf);
++    if (check != NULL) {
++        tcc_close();
++    } else {
++        for (i = 0; i < s1->nb_library_paths; i++) {
++            path = s1->library_paths[i];
++            snprintf(buf, sizeof(buf), "%s/%s", path, filename);
++            check = tcc_open(s1, buf);
++
++            if (check != NULL) {
++                tcc_close();
++                break;
++            }
++        }
++    }
++
+     return tcc_add_file(s1, buf);
+ }
+ 
