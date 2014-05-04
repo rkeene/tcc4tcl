@@ -70,6 +70,8 @@ install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc4tcl.tcl tcc/libtcc1.a $(shell echo
 	@if ! echo "_WIN32" | $(CPP) $(CPPFLAGS) - | grep '^_WIN32$$' >/dev/null; then \
 		echo cp -r $(srcdir)/tcc/win32/include/* "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include/"; \
 		cp -r $(srcdir)/tcc/win32/include/* "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include/"; \
+		echo cp -r $(srcdir)/tcc/win32/lib/*.def "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib/"; \
+		cp -r $(srcdir)/tcc/win32/lib/*.def "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib/"; \
 	fi
 	( for file in $(INSTALL_HEADERS); do echo "#include <$${file}>"; done ) | \
 		$(CPP) $(CPPFLAGS) $(CFLAGS) -I$(srcdir)/tcc/include -I$(srcdir)/tcc/include - | awk -f $(srcdir)/headers.awk | while read src dst; do \
