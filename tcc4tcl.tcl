@@ -55,8 +55,6 @@ namespace eval tcc4tcl {
 }
 proc tcc4tcl::to_dll {code dll {libs {}}} {
     tcc4tcl $::tcc4tcl::dir dll tcc_1
-    tcc_1 add_library tcl8.5 
-    tcc_1 add_library_path .
     foreach lib $libs {tcc_1 add_library $lib}
     if {$::tcl_platform(platform) eq "windows"} {
         tcc_1 define DLL_EXPORT {__declspec(dllexport)} 
@@ -96,8 +94,6 @@ proc ::tcc4tcl::cc {code} {
   if {![info exists tcc(cc)]} {
       set tcc(cc) tcc1
       tcc4tcl $::tcc4tcl::dir $tcc(cc)
-      $tcc(cc) add_library tcl8.5
-      $tcc(cc) add_include_path [file join $::tcc4tcl::dir include]
   }
   Log code:$code
   $tcc(cc) compile $code
