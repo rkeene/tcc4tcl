@@ -1,6 +1,6 @@
 diff -uNr tcc-0.9.26.orig/tccpe.c tcc-0.9.26-1win32useopenlibs/tccpe.c
 --- tcc-0.9.26.orig/tccpe.c	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1win32useopenlibs/tccpe.c	2014-05-04 02:16:34.590555001 -0500
++++ tcc-0.9.26-1win32useopenlibs/tccpe.c	2014-05-04 02:20:25.285150002 -0500
 @@ -38,6 +38,9 @@
  # define ADDR3264 DWORD
  #endif
@@ -40,7 +40,7 @@ diff -uNr tcc-0.9.26.orig/tccpe.c tcc-0.9.26-1win32useopenlibs/tccpe.c
                      }
                      if (!v)
                          tcc_error_noabort("undefined symbol '%s'", name);
-@@ -1209,9 +1232,34 @@
+@@ -1209,9 +1232,35 @@
  
              const char *name = symtab_section->link->data + sym->st_name;
              unsigned type = ELFW(ST_TYPE)(sym->st_info);
@@ -71,6 +71,7 @@ diff -uNr tcc-0.9.26.orig/tccpe.c tcc-0.9.26-1win32useopenlibs/tccpe.c
 +                        }
 +                    }
 +                }
++                tcc_free(modules);
 +            }
 +
              if (0 == imp_sym)
