@@ -96,6 +96,7 @@ clean:
 	-$(MAKE) -C tcc clean
 
 distclean: clean
+	rm -rf __TMP__
 	rm -rf autom4te.cache
 	rm -f config.log config.status
 	rm -f pkgIndex.tcl tcc4tcl.syms tcc4tcl.vers
@@ -103,7 +104,6 @@ distclean: clean
 	-$(MAKE) -C tcc distclean
 
 mrproper: distclean
-	rm -rf __TMP__
 	rm -rf tcc
 	rm -f configure aclocal.m4
 	rm -f config.guess config.sub install-sh
