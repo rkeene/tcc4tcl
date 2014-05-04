@@ -17,6 +17,9 @@ tcc4tcl.o
 tcc4tcl-static.a
 tcc4tcl.so
 tcc4tcl.sl
+tcc4tcl.dll
+tcc4tcl.dll.def
+tcc4tcl.dll.a
 tcc4tcl.dylib
 tcc4tcl.syms
 tcc4tcl.vers
