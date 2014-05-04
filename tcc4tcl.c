@@ -252,12 +252,10 @@ static int Tcc4tclCreateCmd( ClientData cdata, Tcl_Interp *interp, int objc, Tcl
 		}
 	}
 
-	s = tcc_new();
+	s = tcc_new(Tcl_GetString(objv[1]));
 	if (s == NULL) {
 		return(TCL_ERROR);
 	}
-
-	s->tcc_lib_path = tcc_strdup(Tcl_GetString(objv[1]));
 
 	tcc_set_error_func(s, interp, (void *)&Tcc4tclErrorFunc);
 
