@@ -78,7 +78,6 @@ install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc4tcl.tcl tcc/libtcc1.a $(shell echo
 			dst="$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include/$$dst"; \
 			if [ -e "$${dst}" ]; then continue; fi; \
 			dstdir="$$(dirname "$$dst")"; \
-			echo mkdir -p "$$dstdir"; \
 			mkdir -p "$$dstdir"; \
 			echo cp "$$src" "$$dst"; \
 			cp "$$src" "$$dst"; \
