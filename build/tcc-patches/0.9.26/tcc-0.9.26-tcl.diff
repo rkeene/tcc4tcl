@@ -1,0 +1,65 @@
+--- tcc-0.9.26.orig/configure	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1tcl/configure	2014-05-01 19:50:10.103740647 -0500
+@@ -43,6 +43,7 @@
+ tcc_libpaths=""
+ tcc_crtprefix=""
+ tcc_elfinterp=""
++tcc_tcl_path=""
+ tcc_lddir=
+ confvars=
+ 
+@@ -154,6 +155,8 @@
+   ;;
+   --elfinterp=*) tcc_elfinterp=`echo $opt | cut -d '=' -f 2`
+   ;;
++  --with-tcl=*) tcc_tcl_path=`echo $opt | cut -d '=' -f 2-`
++  ;;
+   --cpu=*) cpu=`echo $opt | cut -d '=' -f 2`
+   ;;
+   --enable-gprof) gprof="yes"
+@@ -278,6 +281,7 @@
+   --libpaths=...           specify system library paths, colon separated
+   --crtprefix=...          specify locations of crt?.o, colon separated
+   --elfinterp=...          specify elf interpreter
++  --with-tcl=...           specify path to Tcl
+ EOF
+ #echo "NOTE: The object files are build at the place where configure is launched"
+ exit 1
+@@ -339,6 +343,25 @@
+   esac
+ fi
+ 
++print_tcl_defs() {
++	(
++		tclConfig="$1"
++		. "${tclConfig}"
++		LDFLAGS="$LDFLAGS $TCL_LIB_SPEC $TCL_LIBS"
++		CFLAGS="$CFLAGS $TCL_INCLUDE_SPEC -DHAVE_TCL_H=1"
++		set | egrep '^(CFLAGS|LDFLAGS)='
++	)
++}
++
++if [ -n "${tcc_tcl_path}" ]; then
++	for tcc_tcl_path_file in ${tcc_tcl_path}/{,lib,lib64}/tclConfig.sh; do
++		if [ -f "${tcc_tcl_path_file}" ]; then
++			eval `print_tcl_defs "${tcc_tcl_path_file}"`
++			break
++		fi
++	done
++fi
++
+ cat <<EOF
+ Binary  directory   $bindir
+ TinyCC directory    $tccdir
+--- tcc-0.9.26.orig/tcc.h	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1tcl/tcc.h	2014-05-01 19:50:24.973630534 -0500
+@@ -23,6 +23,9 @@
+ 
+ #define _GNU_SOURCE
+ #include "config.h"
++#ifdef HAVE_TCL_H
++#  include <tcl.h>
++#endif
+ 
+ #ifdef CONFIG_TCCBOOT
+ #include "tccboot.h"

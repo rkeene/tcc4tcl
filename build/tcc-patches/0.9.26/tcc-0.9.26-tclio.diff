@@ -1,0 +1,430 @@
+diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1tclio/libtcc.c
+--- tcc-0.9.26.orig/libtcc.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1tclio/libtcc.c	2014-05-02 01:30:08.967140003 -0500
+@@ -669,7 +669,7 @@
+     bf->line_num = 1;
+     bf->ifndef_macro = 0;
+     bf->ifdef_stack_ptr = s1->ifdef_stack_ptr;
+-    bf->fd = -1;
++    bf->fd = NULL;
+     bf->prev = file;
+     file = bf;
+ }
+@@ -677,26 +677,35 @@
+ ST_FUNC void tcc_close(void)
+ {
+     BufferedFile *bf = file;
+-    if (bf->fd > 0) {
+-        close(bf->fd);
++    if (bf->fd != NULL) {
++        Tcl_Close(NULL,bf->fd);
+         total_lines += bf->line_num;
+     }
+     file = bf->prev;
+     tcc_free(bf);
+ }
+ 
+-ST_FUNC int tcc_open(TCCState *s1, const char *filename)
++ST_FUNC Tcl_Channel tcc_open(TCCState *s1, const char *filename)
+ {
+-    int fd;
+-    if (strcmp(filename, "-") == 0)
+-        fd = 0, filename = "stdin";
+-    else
+-        fd = open(filename, O_RDONLY | O_BINARY);
+-    if ((s1->verbose == 2 && fd >= 0) || s1->verbose == 3)
+-        printf("%s %*s%s\n", fd < 0 ? "nf":"->",
++    Tcl_Channel fd;
++    Tcl_Obj *path;
++
++    if (strcmp(filename, "-") == 0) {
++        fd = Tcl_GetStdChannel(TCL_STDIN);
++        filename = "stdin";
++    } else {
++        path = Tcl_NewStringObj(filename,-1);
++        Tcl_IncrRefCount(path);
++        fd = Tcl_FSOpenFileChannel(NULL,path, "r", 0);
++        Tcl_DecrRefCount(path);
++    }
++
++    if ((s1->verbose == 2 && fd != NULL) || s1->verbose == 3)
++        printf("%s %*s%s\n", fd == NULL ? "nf":"->",
+                (int)(s1->include_stack_ptr - s1->include_stack), "", filename);
+-    if (fd < 0)
+-        return -1;
++    if (fd == NULL) {
++        return NULL;
++    }
+ 
+     tcc_open_bf(s1, filename, 0);
+     file->fd = fd;
+@@ -1099,7 +1108,8 @@
+ {
+     const char *ext;
+     ElfW(Ehdr) ehdr;
+-    int fd, ret, size;
++    int ret, size;
++    Tcl_Channel ret_chan, fd;
+ 
+     /* find source file type with extension */
+     ext = tcc_fileextension(filename);
+@@ -1113,11 +1123,12 @@
+ #endif
+ 
+     /* open the file */
+-    ret = tcc_open(s1, filename);
+-    if (ret < 0) {
++    ret = 0;
++    ret_chan = tcc_open(s1, filename);
++    if (ret_chan == NULL) {
+         if (flags & AFF_PRINT_ERROR)
+             tcc_error_noabort("file '%s' not found", filename);
+-        return ret;
++        return -1;
+     }
+ 
+     /* update target deps */
+@@ -1151,8 +1162,8 @@
+ 
+     fd = file->fd;
+     /* assume executable format: auto guess file type */
+-    size = read(fd, &ehdr, sizeof(ehdr));
+-    lseek(fd, 0, SEEK_SET);
++    size = Tcl_Read(fd, (char *)&ehdr, sizeof(ehdr));
++    Tcl_Seek(fd, 0, SEEK_SET);
+     if (size <= 0) {
+         tcc_error_noabort("could not read header");
+         goto the_end;
+diff -uNr tcc-0.9.26.orig/tcc.h tcc-0.9.26-1tclio/tcc.h
+--- tcc-0.9.26.orig/tcc.h	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1tclio/tcc.h	2014-05-02 01:30:08.967140003 -0500
+@@ -429,7 +429,7 @@
+ typedef struct BufferedFile {
+     uint8_t *buf_ptr;
+     uint8_t *buf_end;
+-    int fd;
++    Tcl_Channel fd;
+     struct BufferedFile *prev;
+     int line_num;    /* current line number - here to simplify code */
+     int ifndef_macro;  /* #ifndef macro / #endif search */
+@@ -1045,7 +1045,7 @@
+ ST_FUNC Sym *global_identifier_push(int v, int t, int c);
+ 
+ ST_FUNC void tcc_open_bf(TCCState *s1, const char *filename, int initlen);
+-ST_FUNC int tcc_open(TCCState *s1, const char *filename);
++ST_FUNC Tcl_Channel tcc_open(TCCState *s1, const char *filename);
+ ST_FUNC void tcc_close(void);
+ 
+ ST_FUNC int tcc_add_file_internal(TCCState *s1, const char *filename, int flags);
+@@ -1226,8 +1226,8 @@
+ ST_FUNC void relocate_section(TCCState *s1, Section *s);
+ 
+ ST_FUNC void tcc_add_linker_symbols(TCCState *s1);
+-ST_FUNC int tcc_load_object_file(TCCState *s1, int fd, unsigned long file_offset);
+-ST_FUNC int tcc_load_archive(TCCState *s1, int fd);
++ST_FUNC int tcc_load_object_file(TCCState *s1, Tcl_Channel fd, unsigned long file_offset);
++ST_FUNC int tcc_load_archive(TCCState *s1, Tcl_Channel fd);
+ ST_FUNC void tcc_add_bcheck(TCCState *s1);
+ 
+ ST_FUNC void build_got_entries(TCCState *s1);
+@@ -1239,7 +1239,7 @@
+ #endif
+ 
+ #ifndef TCC_TARGET_PE
+-ST_FUNC int tcc_load_dll(TCCState *s1, int fd, const char *filename, int level);
++ST_FUNC int tcc_load_dll(TCCState *s1, Tcl_Channel fd, const char *filename, int level);
+ ST_FUNC int tcc_load_ldscript(TCCState *s1);
+ ST_FUNC uint8_t *parse_comment(uint8_t *p);
+ ST_FUNC void minp(void);
+@@ -1313,7 +1313,7 @@
+ 
+ #ifdef TCC_TARGET_COFF
+ ST_FUNC int tcc_output_coff(TCCState *s1, FILE *f);
+-ST_FUNC int tcc_load_coff(TCCState * s1, int fd);
++ST_FUNC int tcc_load_coff(TCCState * s1, Tcl_Channel fd);
+ #endif
+ 
+ /* ------------ tccasm.c ------------ */
+@@ -1335,7 +1335,7 @@
+ 
+ /* ------------ tccpe.c -------------- */
+ #ifdef TCC_TARGET_PE
+-ST_FUNC int pe_load_file(struct TCCState *s1, const char *filename, int fd);
++ST_FUNC int pe_load_file(struct TCCState *s1, const char *filename, Tcl_Channel fd);
+ ST_FUNC int pe_output_file(TCCState * s1, const char *filename);
+ ST_FUNC int pe_putimport(TCCState *s1, int dllindex, const char *name, addr_t value);
+ ST_FUNC SValue *pe_getimport(SValue *sv, SValue *v2);
+diff -uNr tcc-0.9.26.orig/tcccoff.c tcc-0.9.26-1tclio/tcccoff.c
+--- tcc-0.9.26.orig/tcccoff.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1tclio/tcccoff.c	2014-05-02 01:30:08.967140003 -0500
+@@ -858,10 +858,11 @@
+     return 0;
+ }
+ 
+-ST_FUNC int tcc_load_coff(TCCState * s1, int fd)
++ST_FUNC int tcc_load_coff(TCCState * s1, Tcl_Channel fd)
+ {
+ // tktk TokenSym *ts;
+ 
++    int native_fd;
+     FILE *f;
+     unsigned int str_size;
+     char *Coff_str_table, *name;
+@@ -869,8 +870,14 @@
+     struct syment csym;
+     char name2[9];
+     FILHDR file_hdr;		/* FILE HEADER STRUCTURE              */
++    int tcl_ret;
+ 
+-    f = fdopen(fd, "rb");
++    tcl_ret = Tcl_GetChannelHandle(fd, TCL_READABLE, &native_fd);
++    if (tcl_ret != TCL_OK) {
++	tcc_error("Unable to open .out file for input");
++    }
++
++    f = fdopen(native_fd, "rb");
+     if (!f) {
+ 	tcc_error("Unable to open .out file for input");
+     }
+diff -uNr tcc-0.9.26.orig/tccelf.c tcc-0.9.26-1tclio/tccelf.c
+--- tcc-0.9.26.orig/tccelf.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1tclio/tccelf.c	2014-05-02 01:30:08.967140003 -0500
+@@ -2334,13 +2334,13 @@
+     return ret;
+ }
+ 
+-static void *load_data(int fd, unsigned long file_offset, unsigned long size)
++static void *load_data(Tcl_Channel fd, unsigned long file_offset, unsigned long size)
+ {
+     void *data;
+ 
+     data = tcc_malloc(size);
+-    lseek(fd, file_offset, SEEK_SET);
+-    read(fd, data, size);
++    Tcl_Seek(fd, file_offset, SEEK_SET);
++    Tcl_Read(fd, data, size);
+     return data;
+ }
+ 
+@@ -2354,7 +2354,7 @@
+ /* load an object file and merge it with current files */
+ /* XXX: handle correctly stab (debug) info */
+ ST_FUNC int tcc_load_object_file(TCCState *s1, 
+-                                int fd, unsigned long file_offset)
++                                Tcl_Channel fd, unsigned long file_offset)
+ { 
+     ElfW(Ehdr) ehdr;
+     ElfW(Shdr) *shdr, *sh;
+@@ -2372,7 +2372,7 @@
+ 
+     stab_index = stabstr_index = 0;
+ 
+-    if (read(fd, &ehdr, sizeof(ehdr)) != sizeof(ehdr))
++    if (Tcl_Read(fd, (char *) &ehdr, sizeof(ehdr)) != sizeof(ehdr))
+         goto fail1;
+     if (ehdr.e_ident[0] != ELFMAG0 ||
+         ehdr.e_ident[1] != ELFMAG1 ||
+@@ -2499,9 +2499,9 @@
+         size = sh->sh_size;
+         if (sh->sh_type != SHT_NOBITS) {
+             unsigned char *ptr;
+-            lseek(fd, file_offset + sh->sh_offset, SEEK_SET);
++            Tcl_Seek(fd, file_offset + sh->sh_offset, SEEK_SET);
+             ptr = section_ptr_add(s, size);
+-            read(fd, ptr, size);
++            Tcl_Read(fd, ptr, size);
+         } else {
+             s->data_offset += size;
+         }
+@@ -2657,7 +2657,7 @@
+ }
+ 
+ /* load only the objects which resolve undefined symbols */
+-static int tcc_load_alacarte(TCCState *s1, int fd, int size)
++static int tcc_load_alacarte(TCCState *s1, Tcl_Channel fd, int size)
+ {
+     int i, bound, nsyms, sym_index, off, ret;
+     uint8_t *data;
+@@ -2666,7 +2666,7 @@
+     ElfW(Sym) *sym;
+ 
+     data = tcc_malloc(size);
+-    if (read(fd, data, size) != size)
++    if (Tcl_Read(fd, data, size) != size)
+         goto fail;
+     nsyms = get_be32(data);
+     ar_index = data + 4;
+@@ -2684,7 +2684,7 @@
+                     printf("%5d\t%s\t%08x\n", i, p, sym->st_shndx);
+ #endif
+                     ++bound;
+-                    lseek(fd, off, SEEK_SET);
++                    Tcl_Seek(fd, off, SEEK_SET);
+                     if(tcc_load_object_file(s1, fd, off) < 0) {
+                     fail:
+                         ret = -1;
+@@ -2701,7 +2701,7 @@
+ }
+ 
+ /* load a '.a' file */
+-ST_FUNC int tcc_load_archive(TCCState *s1, int fd)
++ST_FUNC int tcc_load_archive(TCCState *s1, Tcl_Channel fd)
+ {
+     ArchiveHeader hdr;
+     char ar_size[11];
+@@ -2711,10 +2711,10 @@
+     unsigned long file_offset;
+ 
+     /* skip magic which was already checked */
+-    read(fd, magic, sizeof(magic));
++    Tcl_Read(fd, magic, sizeof(magic));
+     
+     for(;;) {
+-        len = read(fd, &hdr, sizeof(hdr));
++        len = Tcl_Read(fd, (char *) &hdr, sizeof(hdr));
+         if (len == 0)
+             break;
+         if (len != sizeof(hdr)) {
+@@ -2731,7 +2731,7 @@
+         }
+         ar_name[i + 1] = '\0';
+         //        printf("name='%s' size=%d %s\n", ar_name, size, ar_size);
+-        file_offset = lseek(fd, 0, SEEK_CUR);
++        file_offset = Tcl_Seek(fd, 0, SEEK_CUR);
+         /* align to even */
+         size = (size + 1) & ~1;
+         if (!strcmp(ar_name, "/")) {
+@@ -2747,7 +2747,7 @@
+             if (tcc_load_object_file(s1, fd, file_offset) < 0)
+                 return -1;
+         }
+-        lseek(fd, file_offset + size, SEEK_SET);
++        Tcl_Seek(fd, file_offset + size, SEEK_SET);
+     }
+     return 0;
+ }
+@@ -2756,7 +2756,7 @@
+ /* load a DLL and all referenced DLLs. 'level = 0' means that the DLL
+    is referenced by the user (so it should be added as DT_NEEDED in
+    the generated ELF file) */
+-ST_FUNC int tcc_load_dll(TCCState *s1, int fd, const char *filename, int level)
++ST_FUNC int tcc_load_dll(TCCState *s1, Tcl_Channel fd, const char *filename, int level)
+ { 
+     ElfW(Ehdr) ehdr;
+     ElfW(Shdr) *shdr, *sh, *sh1;
+@@ -2767,7 +2767,7 @@
+     const char *name, *soname;
+     DLLReference *dllref;
+     
+-    read(fd, &ehdr, sizeof(ehdr));
++    Tcl_Read(fd, (char *) &ehdr, sizeof(ehdr));
+ 
+     /* test CPU specific stuff */
+     if (ehdr.e_ident[5] != ELFDATA2LSB ||
+diff -uNr tcc-0.9.26.orig/tccpe.c tcc-0.9.26-1tclio/tccpe.c
+--- tcc-0.9.26.orig/tccpe.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1tclio/tccpe.c	2014-05-02 01:30:08.967140003 -0500
+@@ -1505,10 +1505,10 @@
+ 
+ /* ------------------------------------------------------------- */
+ 
+-static int read_mem(int fd, unsigned offset, void *buffer, unsigned len)
++static int read_mem(Tcl_Channel fd, unsigned offset, void *buffer, unsigned len)
+ {
+-    lseek(fd, offset, SEEK_SET);
+-    return len == read(fd, buffer, len);
++    Tcl_Seek(fd, offset, SEEK_SET);
++    return len == Tcl_Read(fd, buffer, len);
+ }
+ 
+ /* -------------------------------------------------------------
+@@ -1516,7 +1516,7 @@
+  *  as generated by 'windres.exe -O coff ...'.
+  */
+ 
+-static int pe_load_res(TCCState *s1, int fd)
++static int pe_load_res(TCCState *s1, Tcl_Channel fd)
+ {
+     struct pe_rsrc_header hdr;
+     Section *rsrc_section;
+@@ -1571,11 +1571,11 @@
+     return a;
+ }
+ 
+-static char *get_line(char *line, int size, int fd)
++static char *get_line(char *line, int size, Tcl_Channel fd)
+ {
+     int n;
+     for (n = 0; n < size - 1; )
+-        if (read(fd, line + n, 1) < 1 || line[n++] == '\n')
++        if (Tcl_Read(fd, line + n, 1) < 1 || line[n++] == '\n')
+             break;
+     if (0 == n)
+         return NULL;
+@@ -1584,7 +1584,7 @@
+ }
+ 
+ /* ------------------------------------------------------------- */
+-static int pe_load_def(TCCState *s1, int fd)
++static int pe_load_def(TCCState *s1, Tcl_Channel fd)
+ {
+     int state = 0, ret = -1, dllindex = 0;
+     char line[400], dllname[80], *p;
+@@ -1627,7 +1627,7 @@
+ #define TINY_IMPDEF_GET_EXPORT_NAMES_ONLY
+ #include "win32/tools/tiny_impdef.c"
+ 
+-static int pe_load_dll(TCCState *s1, const char *dllname, int fd)
++static int pe_load_dll(TCCState *s1, const char *dllname, Tcl_Channel fd)
+ {
+     char *p, *q;
+     int index;
+@@ -1642,7 +1642,7 @@
+ }
+ 
+ /* ------------------------------------------------------------- */
+-ST_FUNC int pe_load_file(struct TCCState *s1, const char *filename, int fd)
++ST_FUNC int pe_load_file(struct TCCState *s1, const char *filename, Tcl_Channel fd)
+ {
+     int ret = -1;
+     char buf[10];
+diff -uNr tcc-0.9.26.orig/tccpp.c tcc-0.9.26-1tclio/tccpp.c
+--- tcc-0.9.26.orig/tccpp.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1tclio/tccpp.c	2014-05-02 01:30:08.967140003 -0500
+@@ -360,13 +360,13 @@
+     int len;
+     /* only tries to read if really end of buffer */
+     if (bf->buf_ptr >= bf->buf_end) {
+-        if (bf->fd != -1) {
++        if (bf->fd != NULL) {
+ #if defined(PARSE_DEBUG)
+             len = 8;
+ #else
+             len = IO_BUF_SIZE;
+ #endif
+-            len = read(bf->fd, bf->buffer, len);
++            len = Tcl_Read(bf->fd, bf->buffer, len);
+             if (len < 0)
+                 len = 0;
+         } else {
+@@ -1484,7 +1484,7 @@
+                 goto include_done;
+             }
+ 
+-            if (tcc_open(s1, buf1) < 0)
++            if (tcc_open(s1, buf1) == NULL)
+ include_trynext:
+                 continue;
+ 
+diff -uNr tcc-0.9.26.orig/win32/tools/tiny_impdef.c tcc-0.9.26-1tclio/win32/tools/tiny_impdef.c
+--- tcc-0.9.26.orig/win32/tools/tiny_impdef.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1tclio/win32/tools/tiny_impdef.c	2014-05-02 01:31:28.497140003 -0500
+@@ -161,7 +161,7 @@
+ /* -------------------------------------------------------------- */
+ #endif
+ 
+-char *get_export_names(int fd)
++char *get_export_names(Tcl_Channel fd)
+ {
+     int l, i, n, n0;
+     char *p;

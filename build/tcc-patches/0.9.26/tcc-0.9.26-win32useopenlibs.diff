@@ -1,0 +1,79 @@
+diff -uNr tcc-0.9.26.orig/tccpe.c tcc-0.9.26-1win32useopenlibs/tccpe.c
+--- tcc-0.9.26.orig/tccpe.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1win32useopenlibs/tccpe.c	2014-05-04 02:20:25.285150002 -0500
+@@ -38,6 +38,9 @@
+ # define ADDR3264 DWORD
+ #endif
+ 
++#ifdef TCC_IS_NATIVE
++#include <psapi.h>
++#endif
+ #ifdef _WIN32
+ void dbg_printf (const char *fmt, ...)
+ {
+@@ -831,7 +834,27 @@
+                     if (dllref) {
+                         if ( !dllref->handle )
+                             dllref->handle = LoadLibrary(dllref->name);
+-                        v = (ADDR3264)GetProcAddress(dllref->handle, name);
++                        if (dllref->handle) {
++                            v = (ADDR3264)GetProcAddress(dllref->handle, name);
++                        }
++                    }
++                    if (!v) {
++                        HANDLE cur_proc = GetCurrentProcess();
++                        HMODULE *modules;
++                        DWORD needed, i;
++
++                        needed = 0;
++                        EnumProcessModules(cur_proc, NULL, 0, &needed);
++                        modules = tcc_malloc(needed);
++                        if (EnumProcessModules(cur_proc, modules, needed, &needed)) {
++                            for (i = 0; i < needed / sizeof(HMODULE); i++) {
++                                v = (ADDR3264)GetProcAddress(modules[i], name);
++                                if (v) {
++                                    break;
++                                }
++                            }
++                        }
++                        tcc_free(modules);
+                     }
+                     if (!v)
+                         tcc_error_noabort("undefined symbol '%s'", name);
+@@ -1209,9 +1232,35 @@
+ 
+             const char *name = symtab_section->link->data + sym->st_name;
+             unsigned type = ELFW(ST_TYPE)(sym->st_info);
+-            int imp_sym = pe_find_import(pe->s1, sym);
++            int imp_sym;
+             struct import_symbol *is;
+ 
++            imp_sym = pe_find_import(pe->s1, sym);
++            if (0 == imp_sym) {
++                HANDLE cur_proc = GetCurrentProcess();
++                HMODULE *modules;
++                DWORD needed, i;
++                const char *symname;
++                void *addr;
++
++                symname = pe_export_name(pe->s1, sym);
++
++                needed = 0;
++                EnumProcessModules(cur_proc, NULL, 0, &needed);
++                modules = tcc_malloc(needed);
++                if (EnumProcessModules(cur_proc, modules, needed, &needed)) {
++                    for (i = 0; i < needed / sizeof(HMODULE); i++) {
++                        addr = GetProcAddress(modules[i], symname);
++                        if (addr) {
++                            put_elf_sym( pe->s1->dynsymtab_section, (ADDR3264) addr, sizeof(addr), ELFW(ST_INFO)(STB_GLOBAL, STT_OBJECT), 0, SHN_UNDEF, symname);
++                            imp_sym = pe_find_import(pe->s1, sym);
++                            break;
++                        }
++                    }
++                }
++                tcc_free(modules);
++            }
++
+             if (0 == imp_sym)
+                 goto not_found;
+ 

@@ -1,0 +1,197 @@
+diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1crosscompilefixes/configure
+--- tcc-0.9.26.orig/configure	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1crosscompilefixes/configure	2014-05-02 01:27:11.267140003 -0500
+@@ -46,16 +46,8 @@
+ tcc_lddir=
+ confvars=
+ 
+-cpu=`uname -m`
+-
+-# OS specific
+ targetos=`uname -s`
+-case $targetos in
+-  MINGW32*)  mingw32=yes;;
+-  DragonFly) noldl=yes;;
+-  OpenBSD)   noldl=yes;;
+-  *) ;;
+-esac
++cpu=`uname -m`
+ 
+ # find source path
+ # XXX: we assume an absolute path is given when launching configure, 
+@@ -68,47 +60,6 @@
+     source_path_used="no"
+ fi
+ 
+-case "$cpu" in
+-  i386|i486|i586|i686|i86pc|BePC|i686-AT386)
+-    cpu="x86"
+-  ;;
+-  x86_64)
+-    cpu="x86-64"
+-  ;;
+-  arm*)
+-    case "$cpu" in
+-      arm|armv4l)
+-        cpuver=4
+-      ;;
+-      armv5tel|armv5tejl)
+-        cpuver=5
+-      ;;
+-      armv6j|armv6l)
+-        cpuver=6
+-      ;;
+-      armv7a|armv7l)
+-        cpuver=7
+-      ;;
+-    esac
+-    cpu="armv4l"
+-  ;;
+-  alpha)
+-    cpu="alpha"
+-  ;;
+-  "Power Macintosh"|ppc|ppc64)
+-    cpu="powerpc"
+-  ;;
+-  mips)
+-    cpu="mips"
+-  ;;
+-  s390)
+-    cpu="s390"
+-  ;;
+-  *)
+-    cpu="unknown"
+-  ;;
+-esac
+-
+ for opt do
+   eval opt=\"$opt\"
+   case "$opt" in
+@@ -156,6 +107,8 @@
+   ;;
+   --cpu=*) cpu=`echo $opt | cut -d '=' -f 2`
+   ;;
++  --os=*) targetos=`echo $opt | cut -d '=' -f 2-`
++  ;;
+   --enable-gprof) gprof="yes"
+   ;;
+   --enable-mingw32) mingw32="yes" ; cross_prefix="i686-pc-mingw32-" ; cpu=x86
+@@ -181,6 +134,55 @@
+   esac
+ done
+ 
++# OS specific
++case $targetos in
++  MINGW32*|mingw32*)  mingw32=yes;;
++  DragonFly) noldl=yes;;
++  OpenBSD)   noldl=yes;;
++  *) ;;
++esac
++
++case "$cpu" in
++  i386|i486|i586|i686|i86pc|BePC|i686-AT386)
++    cpu="x86"
++  ;;
++  x86_64)
++    cpu="x86-64"
++  ;;
++  arm*)
++    case "$cpu" in
++      arm|armv4l)
++        cpuver=4
++      ;;
++      armv5tel|armv5tejl)
++        cpuver=5
++      ;;
++      armv6j|armv6l)
++        cpuver=6
++      ;;
++      armv7a|armv7l)
++        cpuver=7
++      ;;
++    esac
++    cpu="armv4l"
++  ;;
++  alpha)
++    cpu="alpha"
++  ;;
++  "Power Macintosh"|ppc|ppc64)
++    cpu="powerpc"
++  ;;
++  mips)
++    cpu="mips"
++  ;;
++  s390)
++    cpu="s390"
++  ;;
++  *)
++    cpu="unknown"
++  ;;
++esac
++
+ # Checking for CFLAGS
+ if test -z "$CFLAGS"; then
+     CFLAGS="-Wall -g -O2"
+@@ -270,6 +272,8 @@
+   --disable-static         make libtcc.so instead of libtcc.a
+   --disable-rpath          disable use of -rpath with the above
+   --with-libgcc            use /lib/libgcc_s.so.1 instead of libtcc.a
++  --cpu=...                Specify CPU
++  --os=...                 Specify OS
+   --enable-mingw32         build windows version on linux with mingw32
+   --enable-cygwin          build windows version on windows with cygwin
+   --enable-cross           build cross compilers
+diff -uNr tcc-0.9.26.orig/lib/Makefile tcc-0.9.26-1crosscompilefixes/lib/Makefile
+--- tcc-0.9.26.orig/lib/Makefile	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1crosscompilefixes/lib/Makefile	2014-05-02 01:55:55.407140003 -0500
+@@ -47,24 +47,22 @@
+ ifeq "$(TARGET)" "i386-win32"
+  OBJ = $(addprefix $(DIR)/,$(WIN32_O))
+  TGT = -DTCC_TARGET_I386 -DTCC_TARGET_PE
+- XCC = $(TCC) -B$(top_srcdir)/win32 -I$(top_srcdir)/include
+- XAR = $(DIR)/tiny_libmaker$(EXESUF)
++ XCC = $(CC) -I$(top_srcdir)/win32 -I$(top_srcdir)/include
+ else
+ ifeq "$(TARGET)" "x86_64-win32"
+  OBJ = $(addprefix $(DIR)/,$(WIN64_O))
+  TGT = -DTCC_TARGET_X86_64 -DTCC_TARGET_PE
+- XCC = $(TCC) -B$(top_srcdir)/win32 -I$(top_srcdir)/include
+- XAR = $(DIR)/tiny_libmaker$(EXESUF)
++ XCC = $(CC) -I$(top_srcdir)/win32 -I$(top_srcdir)/include
+ else
+ ifeq "$(TARGET)" "i386"
+  OBJ = $(addprefix $(DIR)/,$(I386_O))
+  TGT = -DTCC_TARGET_I386
+- XCC ?= $(TCC) -B$(TOP)
++ XCC ?= $(CC) -I$(TOP)
+ else
+ ifeq "$(TARGET)" "x86_64"
+  OBJ = $(addprefix $(DIR)/,$(X86_64_O))
+  TGT = -DTCC_TARGET_X86_64
+- XCC ?= $(TCC) -B$(TOP)
++ XCC ?= $(CC) -I$(TOP)
+ else
+  $(error libtcc1.a not supported on target '$(TARGET)')
+ endif
+diff -uNr tcc-0.9.26.orig/win32/lib/crt1.c tcc-0.9.26-1crosscompilefixes/win32/lib/crt1.c
+--- tcc-0.9.26.orig/win32/lib/crt1.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1crosscompilefixes/win32/lib/crt1.c	2014-05-02 01:56:11.277140003 -0500
+@@ -19,7 +19,6 @@
+ 
+ int _start(void)
+ {
+-    __TRY__
+     int argc; char **argv; char **env; int ret;
+     _startupinfo start_info = {0};
+ 
+diff -uNr tcc-0.9.26.orig/win32/lib/wincrt1.c tcc-0.9.26-1crosscompilefixes/win32/lib/wincrt1.c
+--- tcc-0.9.26.orig/win32/lib/wincrt1.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1crosscompilefixes/win32/lib/wincrt1.c	2014-05-02 01:56:15.197140003 -0500
+@@ -11,7 +11,6 @@
+ 
+ int _winstart(void)
+ {
+-    __TRY__
+     char *szCmd;
+     STARTUPINFO startinfo;
+     int fShow;

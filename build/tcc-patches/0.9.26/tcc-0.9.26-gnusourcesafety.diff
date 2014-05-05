@@ -1,0 +1,13 @@
+diff -uNr tcc-0.9.26.orig/tcc.h tcc-0.9.26-1gnusourcesafety/tcc.h
+--- tcc-0.9.26.orig/tcc.h	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1gnusourcesafety/tcc.h	2014-05-02 10:45:54.576640002 -0500
+@@ -21,7 +21,9 @@
+ #ifndef _TCC_H
+ #define _TCC_H
+ 
++#ifndef _GNU_SOURCE
+ #define _GNU_SOURCE
++#endif
+ #include "config.h"
+ 
+ #ifdef CONFIG_TCCBOOT

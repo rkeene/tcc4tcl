@@ -1,0 +1,42 @@
+diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1setlibpathsooner/libtcc.c
+--- tcc-0.9.26.orig/libtcc.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1setlibpathsooner/libtcc.c	2014-05-03 23:19:00.965640003 -0500
+@@ -888,7 +888,7 @@
+     macro_ptr = NULL;
+ }
+ 
+-LIBTCCAPI TCCState *tcc_new(void)
++LIBTCCAPI TCCState *tcc_new(const char *init_lib_path)
+ {
+     TCCState *s;
+     char buffer[100];
+@@ -900,11 +900,15 @@
+     if (!s)
+         return NULL;
+     tcc_state = s;
++    if (init_lib_path == NULL) {
+ #ifdef _WIN32
+-    tcc_set_lib_path_w32(s);
++        tcc_set_lib_path_w32(s);
+ #else
+-    tcc_set_lib_path(s, CONFIG_TCCDIR);
++        tcc_set_lib_path(s, CONFIG_TCCDIR);
+ #endif
++    } else {
++        tcc_set_lib_path(s, init_lib_path);
++    }
+     s->output_type = TCC_OUTPUT_MEMORY;
+     preprocess_new();
+     s->include_stack_ptr = s->include_stack;
+diff -uNr tcc-0.9.26.orig/libtcc.h tcc-0.9.26-1setlibpathsooner/libtcc.h
+--- tcc-0.9.26.orig/libtcc.h	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1setlibpathsooner/libtcc.h	2014-05-03 23:20:14.785640003 -0500
+@@ -14,7 +14,7 @@
+ typedef struct TCCState TCCState;
+ 
+ /* create a new TCC compilation context */
+-LIBTCCAPI TCCState *tcc_new(void);
++LIBTCCAPI TCCState *tcc_new(const char *init_lib_path);
+ 
+ /* free a TCC compilation context */
+ LIBTCCAPI void tcc_delete(TCCState *s);
