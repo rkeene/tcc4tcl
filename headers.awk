@@ -5,9 +5,11 @@
 	gsub(/"$/, "", file);
 
 	destfile = file;
-	if (!gsub(/^.*\/include\//, "", destfile)) {
-		if (!gsub(/^.*\/include-fixed\//, "fix/", destfile)) {
-			next
+	if (!gsub(/^.*\/gcc\/.*\/include\//, "gcc/", destfile)) {
+		if (!gsub(/^.*\/include\//, "", destfile)) {
+			if (!gsub(/^.*\/include-fixed\//, "fix/", destfile)) {
+				next
+			}
 		}
 	}
 
