@@ -1,6 +1,5 @@
-diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1tcl/configure
---- tcc-0.9.26.orig/configure	2013-02-15 09:24:00.000000000 -0500
-+++ tcc-0.9.26-1tcl/configure	2014-05-05 12:35:23.109943527 -0400
+--- tcc-0.9.26.orig/configure	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1tcl/configure	2014-05-01 19:50:10.103740647 -0500
 @@ -43,6 +43,7 @@
  tcc_libpaths=""
  tcc_crtprefix=""
@@ -52,24 +51,8 @@ diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1tcl/configure
  cat <<EOF
  Binary  directory   $bindir
  TinyCC directory    $tccdir
-diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1tcl/libtcc.c
---- tcc-0.9.26.orig/libtcc.c	2013-02-15 09:24:00.000000000 -0500
-+++ tcc-0.9.26-1tcl/libtcc.c	2014-05-05 13:01:47.556096371 -0400
-@@ -981,6 +981,11 @@
-     tcc_define_symbol(s, "__WCHAR_TYPE__", "int");
- #endif
- 
-+    /* Tcl defines */
-+#ifdef USE_TCL_STUBS
-+    tcc_define_symbol(s, "USE_TCL_STUBS", "1");
-+#endif
-+
- #ifndef TCC_TARGET_PE
-     /* glibc defines */
-     tcc_define_symbol(s, "__REDIRECT(name, proto, alias)", "name proto __asm__ (#alias)");
-diff -uNr tcc-0.9.26.orig/tcc.h tcc-0.9.26-1tcl/tcc.h
---- tcc-0.9.26.orig/tcc.h	2013-02-15 09:24:00.000000000 -0500
-+++ tcc-0.9.26-1tcl/tcc.h	2014-05-05 12:35:23.111943547 -0400
+--- tcc-0.9.26.orig/tcc.h	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1tcl/tcc.h	2014-05-01 19:50:24.973630534 -0500
 @@ -23,6 +23,9 @@
  
  #define _GNU_SOURCE
@@ -80,26 +63,3 @@ diff -uNr tcc-0.9.26.orig/tcc.h tcc-0.9.26-1tcl/tcc.h
  
  #ifdef CONFIG_TCCBOOT
  #include "tccboot.h"
-diff -uNr tcc-0.9.26.orig/tccrun.c tcc-0.9.26-1tcl/tccrun.c
---- tcc-0.9.26.orig/tccrun.c	2013-02-15 09:24:00.000000000 -0500
-+++ tcc-0.9.26-1tcl/tccrun.c	2014-05-05 13:06:41.105088994 -0400
-@@ -697,14 +697,17 @@
- 
- /* add the symbol you want here if no dynamic linking is done */
- static TCCSyms tcc_syms[] = {
--#if !defined(CONFIG_TCCBOOT)
- #define TCCSYM(a) { #a, &a, },
-+#if !defined(CONFIG_TCCBOOT)
-     TCCSYM(printf)
-     TCCSYM(fprintf)
-     TCCSYM(fopen)
-     TCCSYM(fclose)
--#undef TCCSYM
- #endif
-+#ifdef USE_TCL_STUBS
-+    TCCSYM(tclStubsPtr)
-+#endif
-+#undef TCCSYM
-     { NULL, NULL },
- };
- 

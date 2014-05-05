@@ -257,6 +257,11 @@ static int Tcc4tclCreateCmd( ClientData cdata, Tcl_Interp *interp, int objc, Tcl
 		return(TCL_ERROR);
 	}
 
+#ifdef USE_TCL_STUBS
+	tcc_add_symbol(s, "tclStubsPtr", &tclStubsPtr);
+	tcc_define_symbol(s, "USE_TCL_STUBS", "1");
+#endif
+
 	tcc_set_error_func(s, interp, (void *)&Tcc4tclErrorFunc);
 
 	ts = (void *) ckalloc(sizeof(*ts));
