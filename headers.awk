@@ -4,6 +4,8 @@
 	gsub(/^"/, "", file);
 	gsub(/"$/, "", file);
 
+	while(gsub(/\/[^\/]*\/..\//, "/", file)) {}
+
 	destfile = file;
 	if (!gsub(/^.*\/gcc\/.*\/include\//, "gcc/", destfile)) {
 		if (!gsub(/^.*\/include\//, "", destfile)) {
