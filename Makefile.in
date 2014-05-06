@@ -57,7 +57,6 @@ tcc4tcl-static.a: tcc4tcl.o tcc/libtcc.a
 	$(AR) rcu tcc4tcl-static.new.a tcc4tcl.o
 	-$(RANLIB) tcc4tcl-static.new.a
 	mv tcc4tcl-static.new.a tcc4tcl-static.a
-	-@WEAKENSYMS@ tcc4tcl-static.a
 
 install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc4tcl.tcl tcc/libtcc1.a $(shell echo $(srcdir)/tcc/include/*) $(srcdir)/headers.awk
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"

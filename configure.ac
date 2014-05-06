@@ -12,11 +12,11 @@ dnl Determine system information
 DC_CHK_OS_INFO
 
 dnl Determine if a shared or static build is requested
-AC_ARG_ENABLE([static], AS_HELP_STRING([--enable-static], [build static library instead of shared library]), [
+AC_ARG_ENABLE([shared], AS_HELP_STRING([--disble-shared], [build static library instead of shared library]), [
 	if test "$enableval" = "no"; then
-		TCC4TCL_TARGET=shared
-	else
 		TCC4TCL_TARGET=static
+	else
+		TCC4TCL_TARGET=shared
 	fi
 ], [
 	TCC4TCL_TARGET=shared
@@ -52,8 +52,8 @@ TCLEXT_INIT
 dnl This must be done last since it breaks the compilation
 if test "${TCC4TCL_TARGET}" = "shared"; then
 	DC_SETVERSIONSCRIPT([tcc4tcl.syms], [tcc4tcl.vers])
+	DC_FIND_STRIP_AND_REMOVESYMS([tcc4tcl.syms])
 fi
-DC_FIND_STRIP_AND_REMOVESYMS([tcc4tcl.syms])
 
 dnl Produce output
 AC_OUTPUT(Makefile pkgIndex.tcl tcc4tcl.syms)
