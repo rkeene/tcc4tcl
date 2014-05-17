@@ -1,6 +1,6 @@
 diff -uNr tcc-0.9.26.orig/tcc.h tcc-0.9.26-1android/tcc.h
 --- tcc-0.9.26.orig/tcc.h	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1android/tcc.h	2014-05-16 23:38:17.599016999 -0500
++++ tcc-0.9.26-1android/tcc.h	2014-05-17 01:13:09.189016999 -0500
 @@ -43,7 +43,9 @@
  #ifndef _WIN32
  # include <unistd.h>
@@ -21,6 +21,19 @@ diff -uNr tcc-0.9.26.orig/tcc.h tcc-0.9.26-1android/tcc.h
  # define CONFIG_TCC_BACKTRACE
  #endif
  
+@@ -917,8 +919,12 @@
+ #else
+ /* XXX: need to define this to use them in non ISOC99 context */
+ extern float strtof (const char *__nptr, char **__endptr);
++#ifdef __ANDROID__
++#  define strtold (long double)strtod
++#else
+ extern long double strtold (const char *__nptr, char **__endptr);
+ #endif
++#endif
+ 
+ #ifdef _WIN32
+ #define IS_DIRSEP(c) (c == '/' || c == '\\')
 diff -uNr tcc-0.9.26.orig/tccrun.c tcc-0.9.26-1android/tccrun.c
 --- tcc-0.9.26.orig/tccrun.c	2013-02-15 08:24:00.000000000 -0600
 +++ tcc-0.9.26-1android/tccrun.c	2014-05-16 23:38:36.949016999 -0500
