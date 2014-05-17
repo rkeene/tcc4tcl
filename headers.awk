@@ -9,8 +9,8 @@
 	destfile = file;
 	if (!gsub(/^.*\/gcc\/.*\/include\//, "gcc/", destfile)) {
 		if (!gsub(/^.*\/include\//, "", destfile)) {
-			if (!gsub(/^.*\/include-fixed\//, "fix/", destfile)) {
-				next
+			if (!gsub(/^.*\/include-fixed\//, "", destfile)) {
+				next;
 			}
 		}
 	}
@@ -23,6 +23,18 @@
 		next;
 	}
 
+	count = 0;
+	origdestfile = destfile;
+	while (destfiles[destfile]) {
+		if (destfiles[destfile] == file) {
+			break;
+		}
+
+		destfile = count "/" origdestfile;
+		count++;
+	}
+
+	destfiles[destfile] = file;
 	copy[file] = destfile;
 }
 
