@@ -143,8 +143,28 @@ diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1crosscompilefixes/configure
    --enable-cross           build cross compilers
 diff -uNr tcc-0.9.26.orig/lib/Makefile tcc-0.9.26-1crosscompilefixes/lib/Makefile
 --- tcc-0.9.26.orig/lib/Makefile	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1crosscompilefixes/lib/Makefile	2014-05-02 01:55:55.407140003 -0500
-@@ -47,24 +47,22 @@
++++ tcc-0.9.26-1crosscompilefixes/lib/Makefile	2014-05-16 23:59:18.019016999 -0500
+@@ -25,6 +25,12 @@
+    XCC = $(CC)
+   endif
+  endif
++ ifeq ($(ARCH),arm)
++  TARGET = arm
++  ifneq ($(TARGETOS),Darwin)
++   XCC = $(CC)
++  endif
++ endif
+  endif
+  endif
+  endif
+@@ -41,36 +47,41 @@
+ 
+ I386_O = libtcc1.o alloca86.o alloca86-bt.o $(BCHECK_O)
+ X86_64_O = libtcc1.o alloca86_64.o
++ARM_O = dummy.o
+ WIN32_O = $(I386_O) crt1.o wincrt1.o dllcrt1.o dllmain.o chkstk.o
+ WIN64_O = $(X86_64_O) crt1.o wincrt1.o dllcrt1.o dllmain.o chkstk.o
+ 
  ifeq "$(TARGET)" "i386-win32"
   OBJ = $(addprefix $(DIR)/,$(WIN32_O))
   TGT = -DTCC_TARGET_I386 -DTCC_TARGET_PE
@@ -170,9 +190,33 @@ diff -uNr tcc-0.9.26.orig/lib/Makefile tcc-0.9.26-1crosscompilefixes/lib/Makefil
   TGT = -DTCC_TARGET_X86_64
 - XCC ?= $(TCC) -B$(TOP)
 + XCC ?= $(CC) -I$(TOP)
++else
++ifeq "$(TARGET)" "arm"
++ OBJ = $(addprefix $(DIR)/,$(ARM_O))
++ TGT = -DTCC_TARGET_ARM
++ XCC ?= $(CC) -I$(TOP)
  else
   $(error libtcc1.a not supported on target '$(TARGET)')
  endif
+ endif
+ endif
+ endif
++endif
+ 
+ XFLAGS = $(CPPFLAGS) $(CFLAGS) $(TGT)
+ 
+@@ -99,4 +110,4 @@
+ 	@echo $@ > $@
+ 
+ clean :
+-	rm -rfv i386-win32 x86_64-win32 i386 x86_64
++	rm -rfv i386-win32 x86_64-win32 i386 x86_64 arm
+diff -uNr tcc-0.9.26.orig/lib/dummy.c tcc-0.9.26-1crosscompilefixes/lib/dummy.c
+--- tcc-0.9.26.orig/lib/dummy.c	1969-12-31 18:00:00.000000000 -0600
++++ tcc-0.9.26-1crosscompilefixes/lib/dummy.c	2014-05-16 23:56:33.539016999 -0500
+@@ -0,0 +1,2 @@
++void __libtcc_dummy(void) {
++}
 diff -uNr tcc-0.9.26.orig/win32/lib/crt1.c tcc-0.9.26-1crosscompilefixes/win32/lib/crt1.c
 --- tcc-0.9.26.orig/win32/lib/crt1.c	2013-02-15 08:24:00.000000000 -0600
 +++ tcc-0.9.26-1crosscompilefixes/win32/lib/crt1.c	2014-05-02 01:56:11.277140003 -0500
