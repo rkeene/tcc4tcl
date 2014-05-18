@@ -1,6 +1,6 @@
 diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1crosscompilefixes/configure
 --- tcc-0.9.26.orig/configure	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1crosscompilefixes/configure	2014-05-18 15:45:41.137516999 -0500
++++ tcc-0.9.26-1crosscompilefixes/configure	2014-05-18 16:05:09.907516999 -0500
 @@ -46,16 +46,8 @@
  tcc_lddir=
  confvars=
@@ -160,6 +160,25 @@ diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1crosscompilefixes/configure
  ar="${cross_prefix}${ar}"
  strip="${cross_prefix}${strip}"
  
+@@ -446,8 +460,16 @@
+   echo "CONFIG_NOLDL=yes" >> config.mak
+ fi
+ if test "$mingw32" = "yes" ; then
+-  echo "CONFIG_WIN32=yes" >> config.mak
+-  echo "#define CONFIG_WIN32 1" >> $TMPH
++  case "$cpu" in
++    x86-64)
++      echo "CONFIG_WIN64=yes" >> config.mak
++      echo "#define CONFIG_WIN64 1" >> $TMPH
++      ;;
++    *)
++      echo "CONFIG_WIN32=yes" >> config.mak
++      echo "#define CONFIG_WIN32 1" >> $TMPH
++      ;;
++  esac
+ fi
+ if test "$cygwin" = "yes" ; then
+   echo "#ifndef _WIN32" >> $TMPH
 diff -uNr tcc-0.9.26.orig/lib/Makefile tcc-0.9.26-1crosscompilefixes/lib/Makefile
 --- tcc-0.9.26.orig/lib/Makefile	2013-02-15 08:24:00.000000000 -0600
 +++ tcc-0.9.26-1crosscompilefixes/lib/Makefile	2014-05-16 23:59:18.019016999 -0500
