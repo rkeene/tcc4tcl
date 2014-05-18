@@ -22,7 +22,7 @@ TCLCONFIGPATH = @TCLCONFIGPATH@
 TCL_PACKAGE_PATH = @TCL_PACKAGE_PATH@
 tcllibdir = $(shell if echo "$(libdir)" | grep '^UNSPECIFIED' >/dev/null; then echo $(TCL_PACKAGE_PATH); else echo "$(libdir)"; fi)
 PACKAGE_INSTALL_DIR = $(tcllibdir)/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
-TCC_CONFIGURE_OPTS = --extra-cflags='$(CPPFLAGS) $(CFLAGS) -DCONFIG_TCC_STATIC=1' --with-tcl=$(TCLCONFIGPATH) --sysincludepaths='{B}/include:{B}/include/0:{B}/include/1:{B}/include/2' --libpaths='{B}/lib' @TCC_CONFIGURE_OPTS@
+TCC_CONFIGURE_OPTS = --extra-cflags='$(CPPFLAGS) $(CFLAGS) -DCONFIG_TCC_STATIC=1' --with-tcl=$(TCLCONFIGPATH) --sysincludepaths='{B}/include:{B}/include/1:{B}/include/2:{B}/include/3:{B}/include/4:{B}/include/5:{B}/include/6:{B}/include/7:{B}/include/8:{B}/include/9' --libpaths='{B}/lib' @TCC_CONFIGURE_OPTS@
 INSTALL_HEADERS = tcl.h assert.h ctype.h errno.h float.h limits.h locale.h math.h setjmp.h signal.h stdarg.h stddef.h stdint.h stdio.h stdlib.h string.h time.h wctype.h
 srcdir = @srcdir@
 host_os = @host_os@
@@ -73,26 +73,15 @@ install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc4tcl.tcl tcc/libtcc1.a $(shell echo
 		echo cp -r $(srcdir)/tcc/win32/lib/*.def "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib/"; \
 		cp -r $(srcdir)/tcc/win32/lib/*.def "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib/"; \
 	fi
-	( \
-		for file in $(INSTALL_HEADERS); do \
-			echo "#include <$${file}>" |  $(CPP) $(CPPFLAGS) $(CFLAGS) -I$(srcdir)/tcc/include -I$(srcdir)/tcc/include - | awk -f $(srcdir)/headers.awk; \
-		done \
-	) | while read src dst; do \
-		dst="$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include/$$dst"; \
-		if [ -e "$${dst}" ]; then continue; fi; \
-		dstdir="$$(dirname "$$dst")"; \
-		mkdir -p "$$dstdir"; \
-		echo cp "$$src" "$$dst"; \
-		cp "$$src" "$$dst"; \
-	done
-	( \
-		cd $(DESTDIR)$(PACKAGE_INSTALL_DIR)/include/gcc || exit 0; \
-		for file in *; do \
-			if [ ! -e "../$${file}" ]; then \
-				mv "$${file}" ../; \
-			fi; \
-		done \
-	)
+	( for file in $(INSTALL_HEADERS); do echo "#include <$${file}>"; done ) | \
+		$(CPP) -v $(CPPFLAGS) $(CFLAGS) -I$(srcdir)/tcc/include -I$(srcdir)/tcc/include - 2>&1 | awk -f $(srcdir)/headers.awk | while read src dst; do \
+			dst="$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include/$$dst"; \
+			if [ -e "$${dst}" ]; then continue; fi; \
+			dstdir="$$(dirname "$$dst")"; \
+			mkdir -p "$$dstdir"; \
+			echo cp "$$src" "$$dst"; \
+			cp "$$src" "$$dst"; \
+		done
 
 test:
 	rm -rf __TMP__
