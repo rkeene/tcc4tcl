@@ -1,3 +1,19 @@
+diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1android/libtcc.c
+--- tcc-0.9.26.orig/libtcc.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1android/libtcc.c	2014-05-17 20:06:02.109312000 -0500
+@@ -966,6 +966,12 @@
+ # endif
+ #endif
+ 
++#if defined(__ANDROID__)
++#  define str(s) #s
++    tcc_define_symbol(s, "__ANDROID__", str(__ANDROID__));
++#  undef str
++#endif
++
+     /* TinyCC & gcc defines */
+ #if defined TCC_TARGET_PE && defined TCC_TARGET_X86_64
+     tcc_define_symbol(s, "__SIZE_TYPE__", "unsigned long long");
 diff -uNr tcc-0.9.26.orig/tcc.h tcc-0.9.26-1android/tcc.h
 --- tcc-0.9.26.orig/tcc.h	2013-02-15 08:24:00.000000000 -0600
 +++ tcc-0.9.26-1android/tcc.h	2014-05-17 01:13:09.189016999 -0500
