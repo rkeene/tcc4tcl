@@ -58,7 +58,7 @@ tcc4tcl-static.a: tcc4tcl.o tcc/libtcc.a
 	-$(RANLIB) tcc4tcl-static.new.a
 	mv tcc4tcl-static.new.a tcc4tcl-static.a
 
-install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc4tcl.tcl tcc/libtcc1.a $(shell echo $(srcdir)/tcc/include/*) $(srcdir)/headers.awk
+install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc4tcl.tcl tcc/libtcc1.a $(shell echo $(srcdir)/tcc/include/*) $(srcdir)/headers.awk $(srcdir)/patch-headers.sh
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib"
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include"
@@ -82,6 +82,7 @@ install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc4tcl.tcl tcc/libtcc1.a $(shell echo
 			echo cp "$$src" "$$dst"; \
 			cp "$$src" "$$dst"; \
 		done
+	$(srcdir)/patch-headers.sh "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include"
 
 test:
 	rm -rf __TMP__
