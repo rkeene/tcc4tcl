@@ -1,6 +1,6 @@
 diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1crosscompilefixes/configure
 --- tcc-0.9.26.orig/configure	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1crosscompilefixes/configure	2014-05-02 01:27:11.267140003 -0500
++++ tcc-0.9.26-1crosscompilefixes/configure	2014-05-18 15:45:41.137516999 -0500
 @@ -46,16 +46,8 @@
  tcc_lddir=
  confvars=
@@ -76,7 +76,7 @@ diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1crosscompilefixes/configure
    --enable-gprof) gprof="yes"
    ;;
    --enable-mingw32) mingw32="yes" ; cross_prefix="i686-pc-mingw32-" ; cpu=x86
-@@ -181,6 +134,55 @@
+@@ -181,6 +134,66 @@
    esac
  done
  
@@ -91,9 +91,20 @@ diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1crosscompilefixes/configure
 +case "$cpu" in
 +  i386|i486|i586|i686|i86pc|BePC|i686-AT386)
 +    cpu="x86"
++    case " ${cc} ${CFLAGS} " in
++      *' -m64 '*)
++        cpu="x86-64"
++        ;;
++    esac
++
 +  ;;
 +  x86_64)
 +    cpu="x86-64"
++    case " ${cc} ${CFLAGS} " in
++      *' -m32 '*)
++        cpu="x86"
++        ;;
++    esac
 +  ;;
 +  arm*)
 +    case "$cpu" in
@@ -132,7 +143,7 @@ diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1crosscompilefixes/configure
  # Checking for CFLAGS
  if test -z "$CFLAGS"; then
      CFLAGS="-Wall -g -O2"
-@@ -270,6 +272,8 @@
+@@ -270,6 +283,8 @@
    --disable-static         make libtcc.so instead of libtcc.a
    --disable-rpath          disable use of -rpath with the above
    --with-libgcc            use /lib/libgcc_s.so.1 instead of libtcc.a
@@ -141,6 +152,14 @@ diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1crosscompilefixes/configure
    --enable-mingw32         build windows version on linux with mingw32
    --enable-cygwin          build windows version on windows with cygwin
    --enable-cross           build cross compilers
+@@ -283,7 +298,6 @@
+ exit 1
+ fi
+ 
+-cc="${cross_prefix}${cc}"
+ ar="${cross_prefix}${ar}"
+ strip="${cross_prefix}${strip}"
+ 
 diff -uNr tcc-0.9.26.orig/lib/Makefile tcc-0.9.26-1crosscompilefixes/lib/Makefile
 --- tcc-0.9.26.orig/lib/Makefile	2013-02-15 08:24:00.000000000 -0600
 +++ tcc-0.9.26-1crosscompilefixes/lib/Makefile	2014-05-16 23:59:18.019016999 -0500
