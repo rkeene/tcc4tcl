@@ -9,7 +9,7 @@ CPP = @CPP@
 AR = @AR@
 RANLIB = @RANLIB@
 CFLAGS = @CFLAGS@ @SHOBJFLAGS@
-CPPFLAGS = @CPPFLAGS@ -I@srcdir@ -I@srcdir@/tcc -Itcc @DEFS@
+CPPFLAGS = @CPPFLAGS@ -I@srcdir@ -I@srcdir@/tcc -Itcc @DEFS@ @SHOBJCPPFLAGS@
 LDFLAGS = @LDFLAGS@
 SHOBJLDFLAGS = @SHOBJLDFLAGS@
 LIBS = @LIBS@
@@ -74,7 +74,7 @@ install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc4tcl.tcl tcc/libtcc1.a $(shell echo
 		cp -r $(srcdir)/tcc/win32/lib/*.def "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib/"; \
 	fi
 	( for file in $(INSTALL_HEADERS); do echo "#include <$${file}>"; done ) | \
-		$(CPP) -v $(CPPFLAGS) $(CFLAGS) -I$(srcdir)/tcc/include -I$(srcdir)/tcc/include - 2>&1 | awk -f $(srcdir)/headers.awk | while read src dst; do \
+		$(CPP) -v $(CPPFLAGS) -I$(srcdir)/tcc/include -I$(srcdir)/tcc/include - 2>&1 | awk -f $(srcdir)/headers.awk | while read src dst; do \
 			dst="$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include/$$dst"; \
 			if [ -e "$${dst}" ]; then continue; fi; \
 			dstdir="$$(dirname "$$dst")"; \
