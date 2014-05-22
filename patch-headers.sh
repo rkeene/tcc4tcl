@@ -29,3 +29,10 @@ fi
 if grep '__STDC_HOSTED__' stdint.h >/dev/null 2>/dev/null && grep '_GCC_WRAP_STDINT_H' stdint.h >/dev/null 2>/dev/null; then
 	echo '#include_next <stdint.h>' > stdint.h
 fi
+
+# MUSL libc expects GCC
+if grep ' __builtin_va_list ' bits/alltypes.h >/dev/null 2>/dev/null; then
+	sed 's@ __builtin_va_list @ char * @' bits/alltypes.h > bits/alltypes.h.new
+	cat bits/alltypes.h.new > bits/alltypes.h
+	rm -f bits/alltypes.h.new
+fi
