@@ -37,19 +37,16 @@ if test "${TCC4TCL_TARGET}" = "shared"; then
 
 	dnl Only export symbols we wish to expose
 	TARGET="tcc4tcl.${SHOBJEXT}"
-
-	no_dlopen='1'
 else
 	AC_CHECK_TOOL([RANLIB], [ranlib])
 	AC_CHECK_TOOL([AR], [ar])
 
 	TARGET="tcc4tcl-static.a"
-
-	no_dlopen='0'
 fi
 AC_SUBST(TARGET)
 AC_SUBST(TCC4TCL_TARGET)
 
+no_dlopen='0'
 AC_ARG_WITH([dlopen], AS_HELP_STRING([--without-dlopen], [do not define dlopen/dlclose/dlerror]), [
 	if test "$withval" = "no"; then
 		no_dlopen='1'
