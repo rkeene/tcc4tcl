@@ -62,6 +62,17 @@ if test "$no_dlopen" = '1'; then
 	CPPFLAGS="${CPPFLAGS} -DCONFIG_TCC_STATIC_NODLOPEN=1"
 fi
 
+dnl Determine HOST_PATH_SEPERATOR
+case $host_os in
+	*mingw*)
+		HOST_PATH_SEPARATOR=';'
+		;;
+	*)
+		HOST_PATH_SEPARATOR=':'
+		;;
+esac
+AC_SUBST(HOST_PATH_SEPARATOR)
+
 dnl Perform Tcl Extension required stuff
 TCLEXT_INIT
 

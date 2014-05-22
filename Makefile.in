@@ -14,6 +14,7 @@ LDFLAGS = @LDFLAGS@
 SHOBJLDFLAGS = @SHOBJLDFLAGS@
 LIBS = @LIBS@
 INSTALL = @INSTALL@
+TCLSH = tclsh
 
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
@@ -22,7 +23,7 @@ TCLCONFIGPATH = @TCLCONFIGPATH@
 TCL_PACKAGE_PATH = @TCL_PACKAGE_PATH@
 tcllibdir = $(shell if echo "$(libdir)" | grep '^UNSPECIFIED' >/dev/null; then echo $(TCL_PACKAGE_PATH); else echo "$(libdir)"; fi)
 PACKAGE_INSTALL_DIR = $(tcllibdir)/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
-TCC_CONFIGURE_OPTS = --cc='$(CC)' --extra-cflags='$(CPPFLAGS) $(CFLAGS) -DCONFIG_TCC_STATIC=1' --with-tcl=$(TCLCONFIGPATH) --sysincludepaths='{B}/include:{B}/include/1:{B}/include/2:{B}/include/3:{B}/include/4:{B}/include/5:{B}/include/6:{B}/include/7:{B}/include/8:{B}/include/9' --libpaths='{B}/lib' @TCC_CONFIGURE_OPTS@
+TCC_CONFIGURE_OPTS = --cc='$(CC)' --extra-cflags='$(CPPFLAGS) $(CFLAGS) -DCONFIG_TCC_STATIC=1' --with-tcl=$(TCLCONFIGPATH) --sysincludepaths='{B}/include@HOST_PATH_SEPARATOR@{B}/include/1@HOST_PATH_SEPARATOR@{B}/include/2@HOST_PATH_SEPARATOR@{B}/include/3@HOST_PATH_SEPARATOR@{B}/include/4@HOST_PATH_SEPARATOR@{B}/include/5@HOST_PATH_SEPARATOR@{B}/include/6@HOST_PATH_SEPARATOR@{B}/include/7@HOST_PATH_SEPARATOR@{B}/include/8@HOST_PATH_SEPARATOR@{B}/include/9' --libpaths='{B}/lib' @TCC_CONFIGURE_OPTS@
 INSTALL_HEADERS = tcl.h assert.h ctype.h errno.h float.h limits.h locale.h math.h setjmp.h signal.h stdarg.h stddef.h stdint.h stdio.h stdlib.h string.h time.h wctype.h
 srcdir = @srcdir@
 host_os = @host_os@
@@ -88,7 +89,7 @@ test:
 	rm -rf __TMP__
 	$(MAKE) install tcllibdir=$(shell pwd)/__TMP__
 	-if [ "$(PACKAGE_VERSION)" = '@@VERS@@' ]; then cd __TMP__/* && sed -i 's|@@VERS@@|0.0.0.11|g' tcc4tcl.@SHOBJEXT@ pkgIndex.tcl; fi
-	tclsh test
+	$(TCLSH) test __TMP__
 	echo Tests Completed OK > TEST-STATUS
 	rm -rf __TMP__
 
