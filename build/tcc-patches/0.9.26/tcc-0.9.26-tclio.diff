@@ -1,6 +1,6 @@
 diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1tclio/libtcc.c
 --- tcc-0.9.26.orig/libtcc.c	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1tclio/libtcc.c	2014-05-02 01:30:08.967140003 -0500
++++ tcc-0.9.26-1tclio/libtcc.c	2014-05-22 11:58:28.746517000 -0500
 @@ -669,7 +669,7 @@
      bf->line_num = 1;
      bf->ifndef_macro = 0;
@@ -43,7 +43,7 @@ diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1tclio/libtcc.c
 +    } else {
 +        path = Tcl_NewStringObj(filename,-1);
 +        Tcl_IncrRefCount(path);
-+        fd = Tcl_FSOpenFileChannel(NULL,path, "r", 0);
++        fd = Tcl_FSOpenFileChannel(NULL,path, "RDONLY BINARY", 0);
 +        Tcl_DecrRefCount(path);
 +    }
 +
