@@ -89,7 +89,7 @@ test:
 	rm -rf __TMP__
 	$(MAKE) install tcllibdir=$(shell pwd)/__TMP__
 	-if [ "$(PACKAGE_VERSION)" = '@@VERS@@' ]; then cd __TMP__/* && sed -i 's|@@VERS@@|0.0.0.11|g' tcc4tcl.@SHOBJEXT@ pkgIndex.tcl; fi
-	$(TCLSH) test __TMP__
+	$(TCLSH) $(srcdir)/test __TMP__
 	echo Tests Completed OK > TEST-STATUS
 	rm -rf __TMP__
 
