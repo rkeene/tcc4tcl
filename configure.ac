@@ -75,7 +75,7 @@ TCLEXT_INIT
 
 dnl This must be done last since it breaks the compilation
 if test "${TCC4TCL_TARGET}" = "shared"; then
-	DC_SETVERSIONSCRIPT([tcc4tcl.vers], [tcc4tcl.syms])
+	DC_SETVERSIONSCRIPT([${srcdir}/tcc4tcl.vers], [tcc4tcl.syms])
 	DC_FIND_STRIP_AND_REMOVESYMS([tcc4tcl.syms])
 fi
 

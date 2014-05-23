@@ -1,0 +1,42 @@
+diff -uNr tcc-0.9.26.orig/Makefile tcc-0.9.26-1supportoldmake/Makefile
+--- tcc-0.9.26.orig/Makefile	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1supportoldmake/Makefile	2014-05-23 13:44:31.506517000 -0500
+@@ -97,26 +97,34 @@
+ PROGS_CROSS=$(WIN32_CROSS) $(I386_CROSS) $(X64_CROSS) $(ARM_CROSS) $(C67_CROSS)
+ LIBTCC1_CROSS=lib/i386-win32/libtcc1.a
+ LIBTCC1=libtcc1.a
+-else ifdef CONFIG_WIN32
++else
++ifdef CONFIG_WIN32
+ PROGS+=tiny_impdef$(EXESUF) tiny_libmaker$(EXESUF)
+ NATIVE_FILES=$(WIN32_FILES)
+ PROGS_CROSS=$(WIN64_CROSS) $(I386_CROSS) $(X64_CROSS) $(ARM_CROSS) $(C67_CROSS)
+ LIBTCC1_CROSS=lib/x86_64-win32/libtcc1.a
+ LIBTCC1=libtcc1.a
+-else ifeq ($(ARCH),i386)
++else
++ifeq ($(ARCH),i386)
+ NATIVE_FILES=$(I386_FILES)
+ PROGS_CROSS=$(X64_CROSS) $(WIN32_CROSS) $(WIN64_CROSS) $(ARM_CROSS) $(C67_CROSS)
+ LIBTCC1_CROSS=lib/i386-win32/libtcc1.a lib/x86_64-win32/libtcc1.a
+ LIBTCC1=libtcc1.a
+-else ifeq ($(ARCH),x86-64)
++else
++ifeq ($(ARCH),x86-64)
+ NATIVE_FILES=$(X86_64_FILES)
+ PROGS_CROSS=$(I386_CROSS) $(WIN32_CROSS) $(WIN64_CROSS) $(ARM_CROSS) $(C67_CROSS)
+ LIBTCC1_CROSS=lib/i386-win32/libtcc1.a lib/x86_64-win32/libtcc1.a lib/i386/libtcc1.a
+ LIBTCC1=libtcc1.a
+-else ifeq ($(ARCH),arm)
++else
++ifeq ($(ARCH),arm)
+ NATIVE_FILES=$(ARM_FILES)
+ PROGS_CROSS=$(I386_CROSS) $(X64_CROSS) $(WIN32_CROSS) $(WIN64_CROSS) $(C67_CROSS)
+ endif
++endif
++endif
++endif
++endif
+ 
+ ifeq ($(TARGETOS),Darwin)
+ PROGS+=tiny_libmaker$(EXESUF)
