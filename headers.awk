@@ -75,7 +75,7 @@ END{
 
 	for (destfile in destcopyfiles) {
 		outidx = 0;
-		for (idx = 0; idx < searchidx; idx++) {
+		for (idx = 0; idx < searchidx + 1; idx++) {
 			if (destcopy[destfile,idx]) {
 				srcfile = destcopy[destfile,idx];
 				newcopy[srcfile,outidx] = destfile;
