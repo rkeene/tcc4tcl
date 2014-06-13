@@ -134,7 +134,7 @@ proc ::tcc4tcl::dll::write {name argl} {
 }
 #---------------------------------------------------------------------
 proc ::tcc4tcl::wrap {name adefs rtype {body "#"}} {
-  set cname c_$name
+  set cname c_[string map [list ":" "_"] $name]
   set wname tcl_$name
   array set types {}
   set names {}
