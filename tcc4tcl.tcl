@@ -111,6 +111,7 @@ proc ::tcc4tcl::ccode {code} {
 
 	append tcc(code) $code \n
 }
+
 proc ::tcc4tcl::cc {code} {
 	variable tcc
 
@@ -118,7 +119,6 @@ proc ::tcc4tcl::cc {code} {
 		set tcc(cc) [::tcc4tcl::new]
 	}
 
-	Log code:$code
 	$tcc(cc) compile $code
 }
 
@@ -451,21 +451,31 @@ proc ::tcc4tcl::ccommand {procname anames args} {
 		append code "\#include <tk.h>" "\n"
 	}
 
-	if {[info exists tcc(code)] && [string length $tcc(code)]>0} {
+	if {[info exists tcc(code)]} {
 		append code $tcc(code)
 		append code "\n"
 	}
+	set tcc(code) ""
 
 	append code "int $cname (ClientData $v(clientdata),Tcl_Interp *$v(interp),"
 	append code "int $v(objc),Tcl_Obj *CONST $v(objv)\[\]) {" "\n"
 	append code [lindex $args end] "\n"
 	append code "}" "\n"
 
-	uplevel 1 [list tcc4tcl::cc $code]
+	if {[catch {
+		uplevel 1 [list tcc4tcl::cc $code]
+	} err]} {
+		unset tcc(cc)
+		tcc4tcl::reset
+
+		return -code error $err
+	}
 
 	Log "CREATING TCL COMMAND $procname / $cname"
 	uplevel 1 [list $tcc(cc) command $procname $cname]
+
 	unset tcc(cc) ;# can't be used for compiling anymore
+	tcc4tcl::reset
 }
 
 proc ::tcc4tcl::tk {args} {

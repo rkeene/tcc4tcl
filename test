@@ -7,6 +7,15 @@ tcc4tcl::cproc test {int i} int { return(i+42); }
 tcc4tcl::cproc test1 {int i} int { return(i+42); }
 tcc4tcl::cproc ::bob::test1 {int i} int { return(i+42); }
 
+# This will fail
+catch {
+	tcc4tcl::cproc test2 {int i} int { badcode; }
+}
+
+# This should work
+tcc4tcl::cproc test3 {int i} int { return(i+42); }
+
 puts [test 1]
-puts [::test1 1]
+puts [test1 1]
+puts [test3 1]
 puts [::bob::test1 1]
