@@ -5,4 +5,8 @@ package require tcc4tcl
 
 tcc4tcl::cproc test {int i} int { return(i+42); }
 tcc4tcl::cproc test1 {int i} int { return(i+42); }
+tcc4tcl::cproc ::bob::test1 {int i} int { return(i+42); }
+
 puts [test 1]
+puts [::test1 1]
+puts [::bob::test1 1]
