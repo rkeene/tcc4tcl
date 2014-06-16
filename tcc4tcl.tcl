@@ -75,11 +75,11 @@ proc tcc4tcl::to_dll {code dll {libs {}}} {
 	if {$::tcl_platform(platform) eq "windows"} {
 		$handle define DLL_EXPORT {__declspec(dllexport)} 
 
-		set f [open [file join $::tcc4tcl::dir c dllcrt1.c]]
+		set f [open [file join $::tcc4tcl::dir lib dllcrt1.c]]
 		$handle compile [read $f]
 		close $f
 
-		set f [open [file join $::tcc4tcl::dir c dllmain.c]]
+		set f [open [file join $::tcc4tcl::dir lib dllmain.c]]
 		$handle compile [read $f]
 		close $f
 	} else {
@@ -91,15 +91,18 @@ proc tcc4tcl::to_dll {code dll {libs {}}} {
 
 	rename $handle {}
 }
+
 proc ::tcc4tcl::Log {args} {
 	# puts $args
 }
+
 proc ::tcc4tcl::reset {} {
 	variable tcc
 	set tcc(code)   ""
 	set tcc(cfiles) [list]
 	set tcc(tk) 0
 }
+
 # Custom helpers
 proc ::tcc4tcl::checkname {n} {expr {[regexp {^[a-zA-Z0-9_]+$} $n] > 0}}
 proc ::tcc4tcl::cleanname {n} {regsub -all {[^a-zA-Z0-9_]+} $n _}

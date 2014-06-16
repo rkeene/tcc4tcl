@@ -59,7 +59,7 @@ tcc4tcl-static.a: tcc4tcl.o tcc/libtcc.a
 	-$(RANLIB) tcc4tcl-static.new.a
 	mv tcc4tcl-static.new.a tcc4tcl-static.a
 
-install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc4tcl.tcl tcc/libtcc1.a $(shell echo $(srcdir)/tcc/include/*) $(srcdir)/headers.awk $(srcdir)/patch-headers.sh
+install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc4tcl.tcl tcc/libtcc1.a $(shell echo $(srcdir)/tcc/include/*) $(shell echo $(srcdir)/tcc/win32/lib/*.c) $(srcdir)/headers.awk $(srcdir)/patch-headers.sh
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib"
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include"
@@ -67,6 +67,7 @@ install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc4tcl.tcl tcc/libtcc1.a $(shell echo
 	$(INSTALL) -m 0644 pkgIndex.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -m 0644 $(srcdir)/tcc4tcl.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -m 0644 tcc/libtcc1.a "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib"
+	$(INSTALL) -m 0644 $(shell echo $(srcdir)/tcc/win32/lib/*.c) "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib"
 	$(INSTALL) -m 0644 $(shell echo $(srcdir)/tcc/include/*) "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include"
 	@if ! echo "_WIN32" | $(CPP) $(CPPFLAGS) - | grep '^_WIN32$$' >/dev/null; then \
 		echo cp -r $(srcdir)/tcc/win32/include/* "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include/"; \
