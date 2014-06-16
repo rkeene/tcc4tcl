@@ -356,12 +356,12 @@ proc ::tcc4tcl::wrapExport {name cmds {body ""}} {
 }
 
 #---------------------------------------------------------------------
-proc ::tcc4tcl::cproc {name adefs rtype {body "#"}} {
+proc ::tcc4tcl::cproc {name adefs rtype {body "#"} {addfuncs ""}} {
 	foreach {code cbody} [wrap $name $adefs $rtype $body] break
 
 	::tcc4tcl::ccode $code
 
-	uplevel 1 [list ::tcc4tcl::ccommand $name {dummy ip objc objv} $cbody]
+	uplevel 1 [list ::tcc4tcl::ccommand $name {dummy ip objc objv} $cbody $addfuncs]
 }
 
 #---------------------------------------------------------------------
@@ -409,7 +409,7 @@ proc ::tcc4tcl::cdata {name data} {
 }
 
 #-------------------------------------------------------------------
-proc ::tcc4tcl::ccommand {procname anames args} {
+proc ::tcc4tcl::ccommand {procname anames body {addfuncs ""}} {
 	variable tcc
 
 	# Fully qualified proc name
@@ -462,8 +462,16 @@ proc ::tcc4tcl::ccommand {procname anames args} {
 
 	append code "int $cname (ClientData $v(clientdata),Tcl_Interp *$v(interp),"
 	append code "int $v(objc),Tcl_Obj *CONST $v(objv)\[\]) {" "\n"
-	append code [lindex $args end] "\n"
+	append code $body "\n"
 	append code "}" "\n"
+
+	if {[llength $addfuncs] > 0} {
+		set tcc(cc) [tcc4tcl::new]
+
+		foreach addfunc $addfuncs {
+			$tcc(cc) add_runtime_sym $addfunc
+		}
+	}
 
 	if {[catch {
 		uplevel 1 [list tcc4tcl::cc $code]

@@ -12,7 +12,7 @@ dnl Determine system information
 DC_CHK_OS_INFO
 
 dnl Determine if a shared or static build is requested
-AC_ARG_ENABLE([shared], AS_HELP_STRING([--disble-shared], [build static library instead of shared library]), [
+AC_ARG_ENABLE([shared], AS_HELP_STRING([--disable-shared], [build static library instead of shared library]), [
 	if test "$enableval" = "no"; then
 		TCC4TCL_TARGET=static
 	else
@@ -69,6 +69,9 @@ case $host_os in
 		;;
 esac
 AC_SUBST(HOST_PATH_SEPARATOR)
+
+dnl Determine how to lookup symbols at runtime
+TCC4TCL_FIND_DLOPEN
 
 dnl Perform Tcl Extension required stuff
 TCLEXT_INIT

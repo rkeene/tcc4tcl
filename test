@@ -18,8 +18,28 @@ tcc4tcl::cproc test3 {int i} int { return(i+42); }
 # Multiple arguments
 tcc4tcl::cproc add {int a int b} int { return(a+b); }
 
+# Add external functions
+tcc4tcl::cproc mkdir {char* dir} ok {
+	int rv;
+
+	rv = mkdir(dir);
+	if (rv == 0) {
+		return(TCL_OK);
+	};
+
+	return(TCL_ERROR);
+} [list mkdir]
+
+
 puts [test 1]
 puts [test1 1]
 puts [test3 1]
 puts [::bob::test1 1]
 puts [add [test 1] 1]
+
+catch {
+	puts [mkdir "/"]
+} err
+if {$err != ""} {
+	error "\[mkdir\] did not return the expected error"
+}

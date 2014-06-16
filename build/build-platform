@@ -1,0 +1,79 @@
+#! /bin/bash
+
+platform="$1"
+shift
+
+if [ -z "${platform}" ]; then
+	echo "Platforms:"
+fi
+
+for dir in work/libtclkit-*/ __fail__; do
+	if [ "${dir}" == '__fail__' ]; then
+		if [ -z "${platform}" ]; then
+			exit 0
+		fi
+
+		echo "No such platform: ${platform}" >&2
+
+		exit 1
+	fi
+
+	dir="$(echo "${dir}" | sed 's@/$@@')"
+	dir_platform="$(basename "${dir}-" | sed 's@^libtclkit-[^-]*-@@;s@-notk-@-@g;s@-xcompile-@-@g;s@-kitdll-@-@;s@-sdk-@-@g;s@-$@@')"
+
+	if [ -z "${platform}" ]; then
+		echo "  $dir_platform"
+	else
+		if [ "${dir_platform}" = "${platform}" ]; then
+			break
+		fi
+	fi
+done
+dir="$(pwd)/${dir}"
+
+case "${platform}" in
+	linux-i386)
+		platform="x86_64-redhat5-linux 32"
+		;;
+	linux-mipsel)
+		platform="mipsel-unknown-linux-uclibc"
+		;;
+	solaris-amd64)
+		platform="i386-pc-solaris2.10 64"
+		;;
+	solaris-i386)
+		platform="i386-pc-solaris2.10"
+		;;
+	win32-i586)
+		platform="i586-mingw32msvc"
+		;;
+	win64-amd64)
+		platform="x86_64-w64-mingw32"
+		;;
+	android-arm)
+		platform="arm-android9-linux-androideabi"
+		;;
+	netbsd-amd64)
+		platform="x86_64-unknown-netbsd5"
+		;;
+	'')
+		exit 0
+		;;
+	*)
+		echo "Unknown platform: ${platform}" >&2
+
+		exit 1
+		;;
+esac
+
+TCLKIT_SDK_DIR="${dir}"
+export TCLKIT_SDK_DIR
+
+make distclean
+eval `~/root/cross-compilers/setup-cc $platform`
+
+platform="$(echo "${platform}" | cut -f1 -d ' ')"
+
+./configure --host="${platform}" --libdir="$(pwd)/INST" --with-tcl="${dir}/lib" "$@"
+make 
+make install

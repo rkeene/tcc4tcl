@@ -22,6 +22,15 @@
 #include <tcl.h>
 #include <stdlib.h>
 #include "tcc.h"
+#ifdef HAVE_DLFCN_H
+#include <dlfcn.h>
+#endif
+#ifdef HAVE_PSAPI_H
+#  ifdef HAVE_WINDOWS_H
+#    include <windows.h>
+#  endif
+#  include <psapi.h>
+#endif
 
 struct TclTCCState {
 	TCCState *s;
@@ -59,13 +68,17 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
 	static CONST char *options[] = {
 		"add_include_path", "add_file",  "add_library", 
 		"add_library_path", "add_symbol", "command", "compile",
-		"define", "get_symbol", "output_file", "undefine",    (char *) NULL
+		"define", "get_symbol", "output_file", "undefine",
+		"add_runtime_sym",
+		(char *) NULL
 	};
 	enum options {
-		TCLTCC_ADD_INCLUDE, TCLTCC_ADD_FILE, TCLTCC_ADD_LIBRARY, 
-		TCLTCC_ADD_LIBRARY_PATH, TCLTCC_ADD_SYMBOL, TCLTCC_COMMAND, TCLTCC_COMPILE,
-		TCLTCC_DEFINE, TCLTCC_GET_SYMBOL, TCLTCC_OUTPUT_FILE, TCLTCC_UNDEFINE
+		TCC4TCL_ADD_INCLUDE, TCC4TCL_ADD_FILE, TCC4TCL_ADD_LIBRARY, 
+		TCC4TCL_ADD_LIBRARY_PATH, TCC4TCL_ADD_SYMBOL, TCC4TCL_COMMAND, TCC4TCL_COMPILE,
+		TCC4TCL_DEFINE, TCC4TCL_GET_SYMBOL, TCC4TCL_OUTPUT_FILE, TCC4TCL_UNDEFINE,
+		TCC4TCL_ADD_RUNTIME_SYM
 	};
+	char *str;
 
 	ts = (struct TclTCCState *) cdata;
 	s = ts->s;
@@ -80,7 +93,7 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
         return TCL_ERROR;
     }
     switch (index) {
-        case TCLTCC_ADD_INCLUDE:   
+        case TCC4TCL_ADD_INCLUDE:   
             if (objc != 3) {
                 Tcl_WrongNumArgs(interp, 2, objv, "path");
                 return TCL_ERROR;
@@ -88,7 +101,7 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
                 tcc_add_include_path(s, Tcl_GetString(objv[2]));
                 return TCL_OK;
             }
-        case TCLTCC_ADD_FILE:   
+        case TCC4TCL_ADD_FILE:   
             if (objc != 3) {
                 Tcl_WrongNumArgs(interp, 2, objv, "filename");
                 return TCL_ERROR;
@@ -99,7 +112,7 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
                     return TCL_OK;
                 }
             }
-        case TCLTCC_ADD_LIBRARY:
+        case TCC4TCL_ADD_LIBRARY:
             if (objc != 3) {
                 Tcl_WrongNumArgs(interp, 2, objv, "lib");
                 return TCL_ERROR;
@@ -107,7 +120,7 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
                 tcc_add_library(s, Tcl_GetString(objv[2]));
                 return TCL_OK;
             }
-        case TCLTCC_ADD_LIBRARY_PATH:
+        case TCC4TCL_ADD_LIBRARY_PATH:
             if (objc != 3) {
                 Tcl_WrongNumArgs(interp, 2, objv, "path");
                 return TCL_ERROR;
@@ -115,18 +128,18 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
                 tcc_add_library_path(s, Tcl_GetString(objv[2]));
                 return TCL_OK;
             }
-#if 0
-        case TCLTCC_ADD_SYMBOL:
+        case TCC4TCL_ADD_SYMBOL:
             if (objc != 4) {
                 Tcl_WrongNumArgs(interp, 2, objv, "symbol value");
                 return TCL_ERROR;
             }
-            Tcl_GetLongFromObj(interp,objv[3], &val);
 
-            tcc_add_symbol(s,Tcl_GetString(objv[2]),val); 
+            Tcl_GetLongFromObj(interp, objv[3], &val);
+            val_p = (void *) val;
+
+            tcc_add_symbol(s,Tcl_GetString(objv[2]), val_p); 
             return TCL_OK; 
-#endif
-        case TCLTCC_COMMAND:
+        case TCC4TCL_COMMAND:
             if (objc != 4) {
                 Tcl_WrongNumArgs(interp, 2, objv, "tclname cname");
                 return TCL_ERROR;
@@ -149,7 +162,7 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
             /*printf("symbol: %x\n",val); */
             Tcl_CreateObjCommand(interp,Tcl_GetString(objv[2]),val_p,NULL,NULL);
             return TCL_OK;
-        case TCLTCC_COMPILE:
+        case TCC4TCL_COMPILE:
             if(ts->relocated == 1) {
                 Tcl_AppendResult(interp, "code already relocated, cannot compile more",NULL);
                 return TCL_ERROR;
@@ -169,14 +182,14 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
                     return TCL_OK;
                 }
             }
-        case TCLTCC_DEFINE:
+        case TCC4TCL_DEFINE:
             if (objc != 4) {
                 Tcl_WrongNumArgs(interp, 2, objv, "symbol value");
                 return TCL_ERROR;
             }
             tcc_define_symbol(s,Tcl_GetString(objv[2]),Tcl_GetString(objv[3]));
             return TCL_OK;
-        case TCLTCC_GET_SYMBOL:
+        case TCC4TCL_GET_SYMBOL:
             if (objc != 3) {
                 Tcl_WrongNumArgs(interp, 2, objv, "symbol");
                 return TCL_ERROR;
@@ -197,7 +210,7 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
             sym_addr = Tcl_NewWideIntObj((Tcl_WideInt) val_p);
             Tcl_SetObjResult(interp, sym_addr);
             return TCL_OK; 
-        case TCLTCC_OUTPUT_FILE:
+        case TCC4TCL_OUTPUT_FILE:
             if (objc != 3) {
                 Tcl_WrongNumArgs(interp, 2, objv, "filename");
                 return TCL_ERROR;
@@ -218,13 +231,62 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
             } else {
                 return TCL_OK;
             }
-        case TCLTCC_UNDEFINE:
+        case TCC4TCL_UNDEFINE:
             if (objc != 3) {
                 Tcl_WrongNumArgs(interp, 2, objv, "symbol");
                 return TCL_ERROR;
             }
             tcc_undefine_symbol(s,Tcl_GetString(objv[2]));
             return TCL_OK;
+	case TCC4TCL_ADD_RUNTIME_SYM:
+		if (objc != 3) {
+			Tcl_WrongNumArgs(interp, 2, objv, "symbol_name");
+			return(TCL_ERROR);
+		}
+
+		str = Tcl_GetString(objv[2]);
+#ifdef HAVE_DLSYM
+		val_p = dlsym(NULL, str);
+#elif defined(HAVE_ENUMPROCESSMODULES)
+		val_p = NULL;
+		{
+			HANDLE cur_proc;
+			HMODULE *modules;
+			DWORD needed, i;
+
+			needed = 0;
+
+			cur_proc = GetCurrentProcess();
+			EnumProcessModules(cur_proc, NULL, 0, &needed);
+
+			if (needed > 0) {
+				modules = (void *) ckalloc(needed);
+				if (EnumProcessModules(cur_proc, modules, needed, &needed)) {
+					for (i = 0; i < (needed / sizeof(HMODULE)); i++) {
+						val_p = (void *) GetProcAddress(modules[i], str);
+
+						if (val_p) {
+							break;
+						}
+					}
+				}
+
+				ckfree((void *) modules);
+			}
+		}
+#else
+		val_p = NULL;
+#endif
+
+		if (val_p == NULL) {
+			Tcl_AppendResult(interp, "symbol not found", NULL);
+
+			return(TCL_ERROR);
+		}
+
+		tcc_add_symbol(s, Tcl_GetString(objv[2]), val_p); 
+
+		return(TCL_OK);
         default:
             Tcl_Panic("internal error during option lookup");
     }
@@ -271,6 +333,8 @@ static int Tcc4tclCreateCmd( ClientData cdata, Tcl_Interp *interp, int objc, Tcl
 	/*printf("type: %d\n", index); */
 	tcc_set_output_type(s,index);
 	Tcl_CreateObjCommand(interp,Tcl_GetString(objv[objc-1]),Tcc4tclHandleCmd,ts,Tcc4tclCCommandDeleteProc);
+
+	Tcl_SetObjResult(interp, objv[objc-1]);
 
 	return TCL_OK;
 }
