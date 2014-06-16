@@ -22,15 +22,6 @@
 #include <tcl.h>
 #include <stdlib.h>
 #include "tcc.h"
-#ifdef HAVE_DLFCN_H
-#include <dlfcn.h>
-#endif
-#ifdef HAVE_PSAPI_H
-#  ifdef HAVE_WINDOWS_H
-#    include <windows.h>
-#  endif
-#  include <psapi.h>
-#endif
 
 struct TclTCCState {
 	TCCState *s;
@@ -69,14 +60,12 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
 		"add_include_path", "add_file",  "add_library", 
 		"add_library_path", "add_symbol", "command", "compile",
 		"define", "get_symbol", "output_file", "undefine",
-		"add_runtime_sym",
 		(char *) NULL
 	};
 	enum options {
 		TCC4TCL_ADD_INCLUDE, TCC4TCL_ADD_FILE, TCC4TCL_ADD_LIBRARY, 
 		TCC4TCL_ADD_LIBRARY_PATH, TCC4TCL_ADD_SYMBOL, TCC4TCL_COMMAND, TCC4TCL_COMPILE,
-		TCC4TCL_DEFINE, TCC4TCL_GET_SYMBOL, TCC4TCL_OUTPUT_FILE, TCC4TCL_UNDEFINE,
-		TCC4TCL_ADD_RUNTIME_SYM
+		TCC4TCL_DEFINE, TCC4TCL_GET_SYMBOL, TCC4TCL_OUTPUT_FILE, TCC4TCL_UNDEFINE
 	};
 	char *str;
 
@@ -238,55 +227,6 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
             }
             tcc_undefine_symbol(s,Tcl_GetString(objv[2]));
             return TCL_OK;
-	case TCC4TCL_ADD_RUNTIME_SYM:
-		if (objc != 3) {
-			Tcl_WrongNumArgs(interp, 2, objv, "symbol_name");
-			return(TCL_ERROR);
-		}
-
-		str = Tcl_GetString(objv[2]);
-#ifdef HAVE_DLSYM
-		val_p = dlsym(NULL, str);
-#elif defined(HAVE_ENUMPROCESSMODULES)
-		val_p = NULL;
-		{
-			HANDLE cur_proc;
-			HMODULE *modules;
-			DWORD needed, i;
-
-			needed = 0;
-
-			cur_proc = GetCurrentProcess();
-			EnumProcessModules(cur_proc, NULL, 0, &needed);
-
-			if (needed > 0) {
-				modules = (void *) ckalloc(needed);
-				if (EnumProcessModules(cur_proc, modules, needed, &needed)) {
-					for (i = 0; i < (needed / sizeof(HMODULE)); i++) {
-						val_p = (void *) GetProcAddress(modules[i], str);
-
-						if (val_p) {
-							break;
-						}
-					}
-				}
-
-				ckfree((void *) modules);
-			}
-		}
-#else
-		val_p = NULL;
-#endif
-
-		if (val_p == NULL) {
-			Tcl_AppendResult(interp, "symbol not found", NULL);
-
-			return(TCL_ERROR);
-		}
-
-		tcc_add_symbol(s, Tcl_GetString(objv[2]), val_p); 
-
-		return(TCL_OK);
         default:
             Tcl_Panic("internal error during option lookup");
     }

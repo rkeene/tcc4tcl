@@ -28,7 +28,7 @@ tcc4tcl::cproc mkdir {char* dir} ok {
 	};
 
 	return(TCL_ERROR);
-} [list mkdir]
+}
 
 
 puts [test 1]

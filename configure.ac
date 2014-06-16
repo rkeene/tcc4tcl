@@ -38,6 +38,8 @@ if test "${TCC4TCL_TARGET}" = "shared"; then
 	dnl Only export symbols we wish to expose
 	TARGET="tcc4tcl.${SHOBJEXT}"
 else
+	TCC_EXTRA_CFLAGS="${TCC_EXTRA_CFLAGS} -DCONFIG_TCC_STATIC=1"
+
 	AC_CHECK_TOOL([RANLIB], [ranlib])
 	AC_CHECK_TOOL([AR], [ar])
 
@@ -45,6 +47,7 @@ else
 fi
 AC_SUBST(TARGET)
 AC_SUBST(TCC4TCL_TARGET)
+AC_SUBST(TCC_EXTRA_CFLAGS)
 
 no_dlopen='0'
 AC_ARG_WITH([dlopen], AS_HELP_STRING([--without-dlopen], [do not define dlopen/dlclose/dlerror]), [
@@ -69,9 +72,6 @@ case $host_os in
 		;;
 esac
 AC_SUBST(HOST_PATH_SEPARATOR)
-
-dnl Determine how to lookup symbols at runtime
-TCC4TCL_FIND_DLOPEN
 
 dnl Perform Tcl Extension required stuff
 TCLEXT_INIT

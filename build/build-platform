@@ -5,9 +5,14 @@ shift
 
 if [ -z "${platform}" ]; then
 	echo "Platforms:"
+	echo "  native"
 fi
 
 for dir in work/libtclkit-*/ __fail__; do
+	if [ "${platform}" = 'native' ]; then
+		break
+	fi
+
 	if [ "${dir}" == '__fail__' ]; then
 		if [ -z "${platform}" ]; then
 			exit 0
@@ -32,6 +37,9 @@ done
 dir="$(pwd)/${dir}"
 
 case "${platform}" in
+	native)
+		platform=''
+		;;
 	linux-i386)
 		platform="x86_64-redhat5-linux 32"
 		;;
@@ -70,10 +78,37 @@ TCLKIT_SDK_DIR="${dir}"
 export TCLKIT_SDK_DIR
 
 make distclean
-eval `~/root/cross-compilers/setup-cc $platform`
 
-platform="$(echo "${platform}" | cut -f1 -d ' ')"
+if [ "${platform}" != '' ]; then
+	eval `~/root/cross-compilers/setup-cc $platform`
 
-./configure --host="${platform}" --libdir="$(pwd)/INST" --with-tcl="${dir}/lib" "$@"
-make 
+	platform="$(echo "${platform}" | cut -f1 -d ' ')"
+fi
+
+rm -rf INST
+if [ "${platform}" = '' ]; then
+	./configure --libdir="$(pwd)/INST" "$@" || exit 1
+else
+	./configure --host="${platform}" --libdir="$(pwd)/INST" --with-tcl="${dir}/lib" "$@" || exit 1
+fi
+
+make  || exit 1
 make install
+
+case "${platform}" in
+	i586-mingw32msvc)
+		make TCLSH="wine ${dir}/lib/tclsh.exe" test
+		;;
+	x86_64-w64-mingw32)
+		WINEPREFIX="${HOME}/.wine64"
+		export WINEPREFIX
+
+		make TCLSH="wine64 ${dir}/lib/tclsh.exe" test
+		;;
+	x86_64-redhat5-linux)
+		make TCLSH="${dir}/lib/tclsh" test
+		;;
+	'')
+		make test
+		;;
+esac
