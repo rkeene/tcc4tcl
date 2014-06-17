@@ -313,6 +313,15 @@ proc ::tcc4tcl::wrap {name adefs rtype {body "#"}} {
 	#   default   (Tcl_Obj*)
 	#   wide
 	switch -- $rtype {
+		void - ok - int - long - float - double - wide {}
+		default {
+			append cbody "  if (rv == NULL) {\n"
+			append cbody "    return(TCL_ERROR);\n"
+			append cbody "  }\n"
+		}
+	}
+
+	switch -- $rtype {
 		void           { }
 		ok             { append cbody "  return rv;" "\n" }
 		int            { append cbody "  Tcl_SetIntObj(Tcl_GetObjResult(ip), rv);" "\n" }
