@@ -19,15 +19,15 @@ tcc4tcl::cproc test3 {int i} int { return(i+42); }
 tcc4tcl::cproc add {int a int b} int { return(a+b); }
 
 # Add external functions
-tcc4tcl::cproc mkdir {char* dir} ok {
-	int rv;
+tcc4tcl::cproc mkdir {Tcl_Interp* interp char* dir} ok {
+	int mkdir_ret;
+	mkdir_ret = mkdir(dir);
 
-	rv = mkdir(dir);
-	if (rv == 0) {
-		return(TCL_OK);
+	if (mkdir_ret != 0) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("failed", -1));
+		return(TCL_ERROR);
 	};
-
-	return(TCL_ERROR);
+	return(TCL_OK);
 }
 
 
@@ -40,6 +40,6 @@ puts [add [test 1] 1]
 catch {
 	puts [mkdir "/"]
 } err
-if {$err != ""} {
+if {$err != "failed"} {
 	error "\[mkdir\] did not return the expected error"
 }
