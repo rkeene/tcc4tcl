@@ -95,7 +95,13 @@ namespace eval tcc4tcl {
 				}
 			}
 			"dll" {
-				append state(code) "int [string totitle $state(package)]_Init(Tcl_Interp *interp) \{\n"
+				set packageName [lindex $state(package) 0]
+				set packageVersion [lindex $state(package) 1]
+				if {$packageVersion == ""} {
+					set packageVersion "0"
+				}
+
+				append state(code) "int [string totitle $packageName]_Init(Tcl_Interp *interp) \{\n"
 				append state(code) "#ifdef USE_TCL_STUBS\n"
 				append state(code) "  if (Tcl_InitStubs(interp, \"8.4\" , 0) == 0L) \{\n"
 				append state(code) "    return TCL_ERROR;\n"
@@ -106,12 +112,6 @@ namespace eval tcc4tcl {
 					foreach {procname cname} $state(procs) {
 						append state(code) "  Tcl_CreateObjCommand(interp, \"$procname\", $cname, NULL, NULL);"
 					}
-				}
-
-				set packageName [lindex $state(package) 0]
-				set packageVersion [lindex $state(package) 1]
-				if {$packageVersion == ""} {
-					set packageVersion "0"
 				}
 
 				append state(code) "Tcl_PkgProvide(interp, \"$packageName\", \"$packageVersion\");\n"
