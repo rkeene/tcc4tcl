@@ -27,7 +27,7 @@ namespace eval tcc4tcl {
 			if {$pkgName == ""} {
 				set type "exe"
 			} else {
-				set type "dll"
+				set type "package"
 			}
 		}
 
@@ -83,7 +83,7 @@ namespace eval tcc4tcl {
 			"memory" {
 				# No additional code needed
 			}
-			"exe" {
+			"exe" - "dll" {
 				if {[info exists state(procs)] && [llength $state(procs)] > 0} {
 					append state(code) "int _initProcs(Tcl_Interp *interp) \{\n"
 					
@@ -94,7 +94,7 @@ namespace eval tcc4tcl {
 					append state(code) "\}"
 				}
 			}
-			"dll" {
+			"package" {
 				set packageName [lindex $state(package) 0]
 				set packageVersion [lindex $state(package) 1]
 				if {$packageVersion == ""} {
@@ -121,7 +121,15 @@ namespace eval tcc4tcl {
 		}
 
 		# Generate output code
-		tcc4tcl $dir $state(type) tcc
+		switch -- $state(type) {
+			"package" {
+				set tcc_type "dll"
+			}
+			default {
+				set tcc_type $state(type)
+			}
+		}
+		tcc4tcl $dir $tcc_type tcc
 
 		switch -- $state(type) {
 			"memory" {
@@ -132,7 +140,7 @@ namespace eval tcc4tcl {
 				}
 			}
 
-			"dll" - "exe" {
+			"package" - "dll" - "exe" {
 				switch -glob -- $::tcl_platform(os)-$::tcl_platform(machine) {
 					"Linux-x86_64" {
 						tcc add_library_path "/lib64"
