@@ -108,7 +108,13 @@ namespace eval tcc4tcl {
 					}
 				}
 
-				append state(code) "Tcl_PkgProvide(interp, \"$state(package)\", \"0.0\");\n"
+				set packageName [lindex $state(package) 0]
+				set packageVersion [lindex $state(package) 1]
+				if {$packageVersion == ""} {
+					set packageVersion "0"
+				}
+
+				append state(code) "Tcl_PkgProvide(interp, \"$packageName\", \"$packageVersion\");\n"
 				append state(code) "  return(TCL_OK);\n"
 				append state(code) "\}"
 			}
