@@ -24,7 +24,11 @@ namespace eval tcc4tcl {
 		if {$output == ""} {
 			set type "memory"
 		} else {
-			set type "dll"
+			if {$pkgName == ""} {
+				set type "exe"
+			} else {
+				set type "dll"
+			}
 		}
 
 		array set $handle [list tcc $tcc_handle code "" type $type filename $output package $pkgName]
@@ -83,6 +87,21 @@ namespace eval tcc4tcl {
 				foreach {procname cname} $state(procs) {
 					tcc command $procname $cname
 				}
+			}
+			"exe" {
+				if {[info exists state(procs)] && [llength $state(procs)] > 0} {
+					append state(code) "int _initProcs(Tcl_Interp *interp) \{\n"
+					
+					foreach {procname cname} $state(procs) {
+						append state(code) "  Tcl_CreateObjCommand(interp, \"$procname\", $cname, NULL, NULL);"
+					}
+
+					append state(code) "\}"
+				}
+
+				tcc compile $state(code)
+
+				tcc output_file $state(filename)
 			}
 			"dll" {
 				append state(code) "int [string totitle $state(package)]_Init(Tcl_Interp *interp) \{\n"
