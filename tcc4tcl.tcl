@@ -14,7 +14,7 @@ namespace eval tcc4tcl {
 
 	set count 0
 
-	proc new {{output ""}} {
+	proc new {{output ""} {pkgName ""}} {
 		variable dir
 		variable count
 
@@ -27,7 +27,7 @@ namespace eval tcc4tcl {
 			set type "dll"
 		}
 
-		array set $handle [list tcc $tcc_handle code "" type $type]
+		array set $handle [list tcc $tcc_handle code "" type $type filename $output package $pkgName]
 
 		proc $handle {cmd args} [string map [list @@HANDLE@@ $handle] {
 			set handle {@@HANDLE@@}
@@ -75,16 +75,40 @@ namespace eval tcc4tcl {
 		set state(code) "#include <tcl.h>\n\n$state(code)"
 
 		tcc4tcl $dir $state(type) tcc
-		tcc compile $state(code)
 
-		foreach {procname cname} $state(procs) {
-			tcc command $procname $cname
+		switch -- $state(type) {
+			"memory" {
+				tcc compile $state(code)
+
+				foreach {procname cname} $state(procs) {
+					tcc command $procname $cname
+				}
+			}
+			"dll" {
+				append state(code) "int [string totitle $state(package)]_Init(Tcl_Interp *interp) \{\n"
+				append state(code) "#ifdef USE_TCL_STUBS\n"
+				append state(code) "  if (Tcl_InitStubs(interp, \"8.4\" , 0) == 0L) \{\n"
+				append state(code) "    return TCL_ERROR;\n"
+				append state(code) "  \}\n"
+				append state(code) "#endif\n"
+
+				foreach {procname cname} $state(procs) {
+					append state(code) "  Tcl_CreateObjCommand(interp, \"$procname\", $cname, NULL, NULL);"
+				}
+
+				append state(code) "Tcl_PkgProvide(interp, \"$state(package)\", \"0.0\");\n"
+				append state(code) "  return(TCL_OK);\n"
+				append state(code) "\}"
+
+				tcc compile $state(code)
+
+				tcc output_file $state(filename)
+			}
 		}
 
 		rename $handle ""
 		unset $handle
 	}
-
 }
 
 proc ::tcc4tcl::checkname {n} {expr {[regexp {^[a-zA-Z0-9_]+$} $n] > 0}}
