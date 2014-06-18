@@ -61,3 +61,14 @@ catch {
 if {$err != "" || $v == 1} {
 	error "\[test4\] did not return the expected error"
 }
+
+# New API
+set handle [tcc4tcl::new]
+$handle cproc test5 {int i} int { return(i + 42); }
+if {[$handle code] == ""} {
+	error "[list $handle code] did not give code output"
+}
+$handle cproc test6 {int i} int { return(i + 42); }
+$handle go
+puts [test5 1]
+puts [test6 1]
