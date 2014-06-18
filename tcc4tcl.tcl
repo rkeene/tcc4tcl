@@ -35,6 +35,15 @@ namespace eval tcc4tcl {
 
 		proc $handle {cmd args} [string map [list @@HANDLE@@ $handle] {
 			set handle {@@HANDLE@@}
+			if {$cmd == "go"} {
+				set args [list 0 {*}$args]
+			}
+
+			if {$cmd == "code"} {
+				set cmd "go"
+				set args [list 1 {*}$args]
+			}
+
 			uplevel 1 [list ::tcc4tcl::_$cmd $handle {*}$args]
 		}]
 
@@ -59,7 +68,7 @@ namespace eval tcc4tcl {
 	proc _ccode {handle code} {
 		upvar #0 $handle state
 
-		append state(code) $code
+		append state(code) $code "\n"
 	}
 
 	proc _tk {handle} {
@@ -68,30 +77,39 @@ namespace eval tcc4tcl {
 		set state(tk) 1
 	}
 
-	proc _go {handle} {
+	proc _go {handle {outputOnly 0}} {
 		variable dir
 
 		upvar #0 $handle state
 
+		set code $state(code)
+
 		if {[info exists state(tk)]} {
-			set state(code) "#include <tk.h>\n$state(code)"
+			set code "#include <tk.h>\n$code"
 		}
-		set state(code) "#include <tcl.h>\n\n$state(code)"
+		set code "#include <tcl.h>\n\n$code"
 
 		# Append additional generated code to support the output type
 		switch -- $state(type) {
 			"memory" {
 				# No additional code needed
+				if {$outputOnly} {
+					if {[info exists state(procs)] && [llength $state(procs)] > 0} {
+						foreach {procname cname} $state(procs) {
+							append code "/* Immediate: Tcl_CreateObjCommand(interp, \"$procname\", $cname, NULL, NULL); */\n"
+						}
+					}
+				}
 			}
 			"exe" - "dll" {
 				if {[info exists state(procs)] && [llength $state(procs)] > 0} {
-					append state(code) "int _initProcs(Tcl_Interp *interp) \{\n"
+					append code "int _initProcs(Tcl_Interp *interp) \{\n"
 					
 					foreach {procname cname} $state(procs) {
-						append state(code) "  Tcl_CreateObjCommand(interp, \"$procname\", $cname, NULL, NULL);"
+						append code "  Tcl_CreateObjCommand(interp, \"$procname\", $cname, NULL, NULL);\n"
 					}
 
-					append state(code) "\}"
+					append code "\}"
 				}
 			}
 			"package" {
@@ -101,23 +119,27 @@ namespace eval tcc4tcl {
 					set packageVersion "0"
 				}
 
-				append state(code) "int [string totitle $packageName]_Init(Tcl_Interp *interp) \{\n"
-				append state(code) "#ifdef USE_TCL_STUBS\n"
-				append state(code) "  if (Tcl_InitStubs(interp, \"8.4\" , 0) == 0L) \{\n"
-				append state(code) "    return TCL_ERROR;\n"
-				append state(code) "  \}\n"
-				append state(code) "#endif\n"
+				append code "int [string totitle $packageName]_Init(Tcl_Interp *interp) \{\n"
+				append code "#ifdef USE_TCL_STUBS\n"
+				append code "  if (Tcl_InitStubs(interp, \"8.4\" , 0) == 0L) \{\n"
+				append code "    return TCL_ERROR;\n"
+				append code "  \}\n"
+				append code "#endif\n"
 
 				if {[info exists state(procs)] && [llength $state(procs)] > 0} {
 					foreach {procname cname} $state(procs) {
-						append state(code) "  Tcl_CreateObjCommand(interp, \"$procname\", $cname, NULL, NULL);"
+						append code "  Tcl_CreateObjCommand(interp, \"$procname\", $cname, NULL, NULL);\n"
 					}
 				}
 
-				append state(code) "Tcl_PkgProvide(interp, \"$packageName\", \"$packageVersion\");\n"
-				append state(code) "  return(TCL_OK);\n"
-				append state(code) "\}"
+				append code "  Tcl_PkgProvide(interp, \"$packageName\", \"$packageVersion\");\n"
+				append code "  return(TCL_OK);\n"
+				append code "\}"
 			}
+		}
+
+		if {$outputOnly} {
+			return $code
 		}
 
 		# Generate output code
@@ -129,14 +151,17 @@ namespace eval tcc4tcl {
 				set tcc_type $state(type)
 			}
 		}
+
 		tcc4tcl $dir $tcc_type tcc
 
 		switch -- $state(type) {
 			"memory" {
-				tcc compile $state(code)
+				tcc compile $code
 
-				foreach {procname cname} $state(procs) {
-					tcc command $procname $cname
+				if {[info exists state(procs)] && [llength $state(procs)] > 0} {
+					foreach {procname cname} $state(procs) {
+						tcc command $procname $cname
+					}
 				}
 			}
 
@@ -145,6 +170,12 @@ namespace eval tcc4tcl {
 					"Linux-8" {
 						tcc add_library_path "/lib64"
 						tcc add_library_path "/usr/lib64"
+						tcc add_library_path "/lib"
+						tcc add_library_path "/usr/lib"
+					}
+					"SunOS-8" {
+						tcc add_library_path "/lib/64"
+						tcc add_library_path "/usr/lib/64"
 						tcc add_library_path "/lib"
 						tcc add_library_path "/usr/lib"
 					}
@@ -162,7 +193,7 @@ namespace eval tcc4tcl {
 					}
 				}
 
-				tcc compile $state(code)
+				tcc compile $code
 
 				tcc output_file $state(filename)
 			}
