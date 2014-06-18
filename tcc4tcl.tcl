@@ -141,8 +141,8 @@ namespace eval tcc4tcl {
 			}
 
 			"package" - "dll" - "exe" {
-				switch -glob -- $::tcl_platform(os)-$::tcl_platform(machine) {
-					"Linux-x86_64" {
+				switch -glob -- $::tcl_platform(os)-$::tcl_platform(pointerSize) {
+					"Linux-8" {
 						tcc add_library_path "/lib64"
 						tcc add_library_path "/usr/lib64"
 						tcc add_library_path "/lib"
