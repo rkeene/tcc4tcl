@@ -78,15 +78,10 @@ namespace eval tcc4tcl {
 		}
 		set state(code) "#include <tcl.h>\n\n$state(code)"
 
-		tcc4tcl $dir $state(type) tcc
-
+		# Append additional generated code to support the output type
 		switch -- $state(type) {
 			"memory" {
-				tcc compile $state(code)
-
-				foreach {procname cname} $state(procs) {
-					tcc command $procname $cname
-				}
+				# No additional code needed
 			}
 			"exe" {
 				if {[info exists state(procs)] && [llength $state(procs)] > 0} {
@@ -98,10 +93,6 @@ namespace eval tcc4tcl {
 
 					append state(code) "\}"
 				}
-
-				tcc compile $state(code)
-
-				tcc output_file $state(filename)
 			}
 			"dll" {
 				append state(code) "int [string totitle $state(package)]_Init(Tcl_Interp *interp) \{\n"
@@ -111,13 +102,51 @@ namespace eval tcc4tcl {
 				append state(code) "  \}\n"
 				append state(code) "#endif\n"
 
-				foreach {procname cname} $state(procs) {
-					append state(code) "  Tcl_CreateObjCommand(interp, \"$procname\", $cname, NULL, NULL);"
+				if {[info exists state(procs)] && [llength $state(procs)] > 0} {
+					foreach {procname cname} $state(procs) {
+						append state(code) "  Tcl_CreateObjCommand(interp, \"$procname\", $cname, NULL, NULL);"
+					}
 				}
 
 				append state(code) "Tcl_PkgProvide(interp, \"$state(package)\", \"0.0\");\n"
 				append state(code) "  return(TCL_OK);\n"
 				append state(code) "\}"
+			}
+		}
+
+		# Generate output code
+		tcc4tcl $dir $state(type) tcc
+
+		switch -- $state(type) {
+			"memory" {
+				tcc compile $state(code)
+
+				foreach {procname cname} $state(procs) {
+					tcc command $procname $cname
+				}
+			}
+
+			"dll" - "exe" {
+				switch -glob -- $::tcl_platform(os)-$::tcl_platform(machine) {
+					"Linux-x86_64" {
+						tcc add_library_path "/lib64"
+						tcc add_library_path "/usr/lib64"
+						tcc add_library_path "/lib"
+						tcc add_library_path "/usr/lib"
+					}
+					"Linux-*" {
+						tcc add_library_path "/lib32"
+						tcc add_library_path "/usr/lib32"
+						tcc add_library_path "/lib"
+						tcc add_library_path "/usr/lib"
+					}
+					default {
+						if {$::tcl_platform(platform) == "unix"} {
+							tcc add_library_path "/lib"
+							tcc add_library_path "/usr/lib"
+						}
+					}
+				}
 
 				tcc compile $state(code)
 
@@ -125,6 +154,7 @@ namespace eval tcc4tcl {
 			}
 		}
 
+		# Cleanup
 		rename $handle ""
 		unset $handle
 	}
