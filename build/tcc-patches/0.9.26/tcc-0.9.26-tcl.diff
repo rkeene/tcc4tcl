@@ -1,5 +1,6 @@
+diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1tcl/configure
 --- tcc-0.9.26.orig/configure	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1tcl/configure	2014-05-01 19:50:10.103740647 -0500
++++ tcc-0.9.26-1tcl/configure	2014-06-21 09:48:08.270011999 -0500
 @@ -43,6 +43,7 @@
  tcc_libpaths=""
  tcc_crtprefix=""
@@ -25,7 +26,7 @@
  EOF
  #echo "NOTE: The object files are build at the place where configure is launched"
  exit 1
-@@ -339,6 +343,25 @@
+@@ -339,6 +343,29 @@
    esac
  fi
  
@@ -33,6 +34,10 @@
 +	(
 +		tclConfig="$1"
 +		. "${tclConfig}"
++		if [ "${TCL_SUPPORTS_STUBS}" = '1' ]; then
++			TCL_LIBS="${TCL_LIBS} ${TCL_STUB_LIB_SPEC}"
++		fi
++
 +		LDFLAGS="$LDFLAGS $TCL_LIB_SPEC $TCL_LIBS"
 +		CFLAGS="$CFLAGS $TCL_INCLUDE_SPEC -DHAVE_TCL_H=1"
 +		set | egrep '^(CFLAGS|LDFLAGS)='
@@ -51,8 +56,9 @@
  cat <<EOF
  Binary  directory   $bindir
  TinyCC directory    $tccdir
+diff -uNr tcc-0.9.26.orig/tcc.h tcc-0.9.26-1tcl/tcc.h
 --- tcc-0.9.26.orig/tcc.h	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1tcl/tcc.h	2014-05-01 19:50:24.973630534 -0500
++++ tcc-0.9.26-1tcl/tcc.h	2014-06-21 09:38:52.910011999 -0500
 @@ -23,6 +23,9 @@
  
  #define _GNU_SOURCE
