@@ -1,3 +1,46 @@
+# strtonum --- convert string to number
+
+#
+# Arnold Robbins, arnold@skeeve.com, Public Domain
+# February, 2004
+
+function mystrtonum(str,        ret, chars, n, i, k, c)
+{
+    if (str ~ /^0[0-7]*$/) {
+        # octal
+        n = length(str)
+        ret = 0
+        for (i = 1; i <= n; i++) {
+            c = substr(str, i, 1)
+            if ((k = index("01234567", c)) > 0)
+                k-- # adjust for 1-basing in awk
+
+            ret = ret * 8 + k
+        }
+    } else if (str ~ /^0[xX][0-9a-fA-f]+/) {
+        # hexadecimal
+        str = substr(str, 3)    # lop off leading 0x
+        n = length(str)
+        ret = 0
+        for (i = 1; i <= n; i++) {
+            c = substr(str, i, 1)
+            c = tolower(c)
+            if ((k = index("0123456789", c)) > 0)
+                k-- # adjust for 1-basing in awk
+            else if ((k = index("abcdef", c)) > 0)
+                k += 9
+
+            ret = ret * 16 + k
+        }
+    } else if (str ~ /^[-+]?([0-9]+([.][0-9]*([Ee][0-9]+)?)?|([.][0-9]+([Ee][-+]?[0-9]+)?))$/) {
+        # decimal number, possibly floating point
+        ret = str + 0
+    } else
+        ret = "NOT-A-NUMBER"
+
+    return ret
+}
+
 /^End of search list/{
 	in_searchpath = 0;
 }
@@ -66,7 +109,7 @@ END{
 		split(key, parts, SUBSEP);
 
 		src = parts[1];
-		idx = strtonum(parts[2]);
+		idx = mystrtonum(parts[2]);
 		dest = copy[key];
 
 		destcopy[dest,idx] = src;
