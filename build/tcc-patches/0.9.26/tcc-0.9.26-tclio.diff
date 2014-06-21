@@ -95,6 +95,18 @@ diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1tclio/libtcc.c
      if (size <= 0) {
          tcc_error_noabort("could not read header");
          goto the_end;
+diff -uNr tcc-0.9.26.orig/tcc.c tcc-0.9.26-1tclio/tcc.c
+--- tcc-0.9.26.orig/tcc.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1tclio/tcc.c	2014-06-21 00:04:24.170011999 -0500
+@@ -248,7 +248,7 @@
+     int64_t start_time = 0;
+     const char *first_file = NULL;
+ 
+-    s = tcc_new();
++    s = tcc_new(NULL);
+     s->output_type = TCC_OUTPUT_EXE;
+ 
+     optind = tcc_parse_args(s, argc - 1, argv + 1);
 diff -uNr tcc-0.9.26.orig/tcc.h tcc-0.9.26-1tclio/tcc.h
 --- tcc-0.9.26.orig/tcc.h	2013-02-15 08:24:00.000000000 -0600
 +++ tcc-0.9.26-1tclio/tcc.h	2014-05-02 01:30:08.967140003 -0500
