@@ -38,6 +38,7 @@ namespace eval tcc4tcl {
 
 		proc $handle {cmd args} [string map [list @@HANDLE@@ $handle] {
 			set handle {@@HANDLE@@}
+
 			if {$cmd == "go"} {
 				set args [list 0 {*}$args]
 			}
@@ -47,7 +48,13 @@ namespace eval tcc4tcl {
 				set args [list 1 {*}$args]
 			}
 
-			uplevel 1 [list ::tcc4tcl::_$cmd $handle {*}$args]
+			set callcmd ::tcc4tcl::_$cmd
+
+			if {![info command $callcmd]} {
+				return -code error "unknown or ambiguous subcommand \"$cmd\": must be cproc, linktclcommand, code, tk, or go"
+			}
+
+			uplevel 1 [list $callcmd $handle {*}$args]
 		}]
 
 		return $handle
