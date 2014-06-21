@@ -1,6 +1,6 @@
 diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1tcl/configure
 --- tcc-0.9.26.orig/configure	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1tcl/configure	2014-06-21 16:28:18.930011999 -0500
++++ tcc-0.9.26-1tcl/configure	2014-06-21 16:43:35.180011999 -0500
 @@ -43,6 +43,7 @@
  tcc_libpaths=""
  tcc_crtprefix=""
@@ -33,7 +33,7 @@ diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1tcl/configure
 +print_tcl_defs() {
 +	(
 +		tclConfig="$1"
-+		. "${tclConfig}"
++		source "${tclConfig}"
 +		if [ "${TCL_SUPPORTS_STUBS}" = '1' ]; then
 +			TCL_LIBS="${TCL_LIBS} ${TCL_STUB_LIB_SPEC}"
 +		fi
