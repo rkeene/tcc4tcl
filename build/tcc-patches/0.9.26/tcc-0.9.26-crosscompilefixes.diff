@@ -181,7 +181,7 @@ diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1crosscompilefixes/configure
    echo "#ifndef _WIN32" >> $TMPH
 diff -uNr tcc-0.9.26.orig/lib/Makefile tcc-0.9.26-1crosscompilefixes/lib/Makefile
 --- tcc-0.9.26.orig/lib/Makefile	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1crosscompilefixes/lib/Makefile	2014-05-16 23:59:18.019016999 -0500
++++ tcc-0.9.26-1crosscompilefixes/lib/Makefile	2014-06-21 00:26:03.490011999 -0500
 @@ -25,6 +25,12 @@
     XCC = $(CC)
    endif
@@ -195,7 +195,7 @@ diff -uNr tcc-0.9.26.orig/lib/Makefile tcc-0.9.26-1crosscompilefixes/lib/Makefil
   endif
   endif
   endif
-@@ -41,36 +47,41 @@
+@@ -41,20 +47,19 @@
  
  I386_O = libtcc1.o alloca86.o alloca86-bt.o $(BCHECK_O)
  X86_64_O = libtcc1.o alloca86_64.o
@@ -219,21 +219,15 @@ diff -uNr tcc-0.9.26.orig/lib/Makefile tcc-0.9.26-1crosscompilefixes/lib/Makefil
  else
  ifeq "$(TARGET)" "i386"
   OBJ = $(addprefix $(DIR)/,$(I386_O))
-  TGT = -DTCC_TARGET_I386
-- XCC ?= $(TCC) -B$(TOP)
-+ XCC ?= $(CC) -I$(TOP)
- else
- ifeq "$(TARGET)" "x86_64"
-  OBJ = $(addprefix $(DIR)/,$(X86_64_O))
+@@ -66,11 +71,17 @@
   TGT = -DTCC_TARGET_X86_64
-- XCC ?= $(TCC) -B$(TOP)
-+ XCC ?= $(CC) -I$(TOP)
-+else
+  XCC ?= $(TCC) -B$(TOP)
+ else
 +ifeq "$(TARGET)" "arm"
 + OBJ = $(addprefix $(DIR)/,$(ARM_O))
 + TGT = -DTCC_TARGET_ARM
 + XCC ?= $(CC) -I$(TOP)
- else
++else
   $(error libtcc1.a not supported on target '$(TARGET)')
  endif
  endif

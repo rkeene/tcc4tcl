@@ -43,6 +43,7 @@ tcc/libtcc.a: tcc/config.h
 	$(MAKE) -C tcc libtcc.a
 
 tcc/libtcc1.a: tcc/config.h
+	-$(MAKE) -C tcc tcc
 	$(MAKE) -C tcc libtcc1.a
 
 tcc4tcl.o: $(srcdir)/tcc4tcl.c $(srcdir)/tcc/tcc.h $(srcdir)/tcc/libtcc.h tcc/config.h
