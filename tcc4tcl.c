@@ -281,7 +281,7 @@ static int Tcc4tclCreateCmd( ClientData cdata, Tcl_Interp *interp, int objc, Tcl
 
 int Tcc4tcl_Init(Tcl_Interp *interp) {
 #ifdef USE_TCL_STUBS
-	if (Tcl_InitStubs(interp, "8.4" , 0) == 0L) {
+	if (Tcl_InitStubs(interp, TCL_VERSION , 0) == 0L) {
 		return TCL_ERROR;
 	}
 #endif

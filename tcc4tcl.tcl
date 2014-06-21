@@ -121,7 +121,7 @@ namespace eval tcc4tcl {
 
 				append code "int [string totitle $packageName]_Init(Tcl_Interp *interp) \{\n"
 				append code "#ifdef USE_TCL_STUBS\n"
-				append code "  if (Tcl_InitStubs(interp, \"8.4\" , 0) == 0L) \{\n"
+				append code "  if (Tcl_InitStubs(interp, TCL_VERSION, 0) == 0L) \{\n"
 				append code "    return TCL_ERROR;\n"
 				append code "  \}\n"
 				append code "#endif\n"
