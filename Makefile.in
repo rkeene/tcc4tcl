@@ -100,14 +100,13 @@ clean:
 	rm -f tcc4tcl.@SHOBJEXT@.a tcc4tcl.@SHOBJEXT@.def
 	rm -rf __TMP__
 	rm -f TEST-STATUS
-	-$(MAKE) -C tcc clean
+	-$(MAKE) -C tcc distclean
 
 distclean: clean
 	rm -rf autom4te.cache
 	rm -f config.log config.status
 	rm -f pkgIndex.tcl tcc4tcl.syms
 	rm -f Makefile
-	-$(MAKE) -C tcc distclean
 
 mrproper: distclean
 	rm -rf tcc
