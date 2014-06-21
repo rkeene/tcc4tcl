@@ -8,11 +8,13 @@ cd "${headers_dir}" || exit 1
 ## Do not abort compilation at header include time
 if grep '^#error "No function renaming possible"' sys/cdefs.h >/dev/null 2>/dev/null; then
 	awk '
-/#error "No function renaming possible"/{
+/^#error "No function renaming possible"/{
 	print "#define __RENAME(x) no renaming on this platform"
 	next
 }
 {print}
+
+/^#warning /{ next }
 	' sys/cdefs.h > sys/cdefs.h.new
 	cat sys/cdefs.h.new > sys/cdefs.h
 	rm -f sys/cdefs.h.new
