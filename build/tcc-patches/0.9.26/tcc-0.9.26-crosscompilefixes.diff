@@ -249,6 +249,20 @@ diff -uNr tcc-0.9.26.orig/lib/dummy.c tcc-0.9.26-1crosscompilefixes/lib/dummy.c
 @@ -0,0 +1,2 @@
 +void __libtcc_dummy(void) {
 +}
+diff -uNr tcc-0.9.26.orig/lib/libtcc1.c tcc-0.9.26-1crosscompilefixes/lib/libtcc1.c
+--- tcc-0.9.26.orig/lib/libtcc1.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1crosscompilefixes/lib/libtcc1.c	2014-06-21 00:59:12.390011999 -0500
+@@ -609,9 +609,9 @@
+ 
+ /* helper functions for stdarg.h */
+ 
+-#include <stdlib.h>
+ #ifndef __TINYC__
+ /* gives "incompatible types for redefinition of __va_arg" below */
++#include <stdlib.h>
+ #include <stdio.h>
+ #endif
+ 
 diff -uNr tcc-0.9.26.orig/win32/lib/crt1.c tcc-0.9.26-1crosscompilefixes/win32/lib/crt1.c
 --- tcc-0.9.26.orig/win32/lib/crt1.c	2013-02-15 08:24:00.000000000 -0600
 +++ tcc-0.9.26-1crosscompilefixes/win32/lib/crt1.c	2014-05-02 01:56:11.277140003 -0500
