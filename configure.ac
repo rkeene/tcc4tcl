@@ -3,6 +3,7 @@ AC_INIT(tcc4tcl, @@VERS@@)
 
 dnl Checks for programs.
 AC_PROG_CC
+AC_PROG_CPP
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 AC_GNU_SOURCE
@@ -73,13 +74,15 @@ case $host_os in
 esac
 AC_SUBST(HOST_PATH_SEPARATOR)
 
+dnl Find a suitable awk
+AC_CHECK_TOOLS(AWK, gawk awk, [false])
+
 dnl Perform Tcl Extension required stuff
 TCLEXT_INIT
 
 dnl This must be done last since it breaks the compilation
 if test "${TCC4TCL_TARGET}" = "shared"; then
-	DC_SETVERSIONSCRIPT([${srcdir}/tcc4tcl.vers], [tcc4tcl.syms])
-	DC_FIND_STRIP_AND_REMOVESYMS([tcc4tcl.syms])
+	DC_SETUP_STABLE_API([${srcdir}/tcc4tcl.vers], [tcc4tcl.syms])
 fi
 
 dnl Produce output
