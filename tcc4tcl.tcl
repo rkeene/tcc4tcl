@@ -53,6 +53,12 @@ namespace eval tcc4tcl {
 		return $handle
 	}
 
+	proc _linktclcommand {cSymbol tclCommand} {
+		upvar #0 $handle state
+
+		lappend state(procs) $cSymbol $tclCommand
+	}
+
 	proc _cproc {handle name adefs rtype {body "#"}} {
 		upvar #0 $handle state
 
