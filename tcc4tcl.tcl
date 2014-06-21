@@ -11,6 +11,9 @@ namespace eval tcc4tcl {
 	if {[info command ::tcc4tcl] == ""} {
 		load [file join $dir tcc4tcl[info sharedlibextension]] tcc4tcl
 	}
+	if {[info command ::tcc4tcl] == ""} {
+		error "Unable to load tcc4tcl shared library"
+	}
 
 	set count 0
 
