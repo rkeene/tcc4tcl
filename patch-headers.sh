@@ -32,6 +32,10 @@ if grep '__STDC_HOSTED__' stdint.h >/dev/null 2>/dev/null && grep '_GCC_WRAP_STD
 	echo '#include_next <stdint.h>' > stdint.h
 fi
 
+if grep '__CLANG_LIMITS_H' limits.h >/dev/null 2>/dev/null; then
+	echo '#include_next <limits.h>' > limits.h
+fi
+
 # MUSL libc expects GCC
 if grep ' __builtin_va_list ' bits/alltypes.h >/dev/null 2>/dev/null; then
 	sed 's@ __builtin_va_list @ char * @' bits/alltypes.h > bits/alltypes.h.new
