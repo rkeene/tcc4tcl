@@ -1,0 +1,14 @@
+diff -uNr tcc-0.9.26.orig/tccpp.c tcc-0.9.26-1fixstrayfix/tccpp.c
+--- tcc-0.9.26.orig/tccpp.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1fixstrayfix/tccpp.c	2014-06-21 00:51:00.900011999 -0500
+@@ -406,6 +406,10 @@
+ {
+     while (ch == '\\') {
+         inp();
++        if (ch != '\n' && ch != '\r') {
++            break;
++        }
++
+         if (ch == '\n') {
+             file->line_num++;
+             inp();
