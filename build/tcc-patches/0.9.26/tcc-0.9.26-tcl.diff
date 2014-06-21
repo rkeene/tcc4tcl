@@ -1,6 +1,6 @@
 diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1tcl/configure
 --- tcc-0.9.26.orig/configure	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1tcl/configure	2014-06-21 09:48:08.270011999 -0500
++++ tcc-0.9.26-1tcl/configure	2014-06-21 16:28:18.930011999 -0500
 @@ -43,6 +43,7 @@
  tcc_libpaths=""
  tcc_crtprefix=""
@@ -45,7 +45,7 @@ diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1tcl/configure
 +}
 +
 +if [ -n "${tcc_tcl_path}" ]; then
-+	for tcc_tcl_path_file in ${tcc_tcl_path}/{,lib,lib64}/tclConfig.sh; do
++	for tcc_tcl_path_file in "${tcc_tcl_path}/tclConfig.sh" "${tcc_tcl_path}/lib/tclConfig.sh" "${tcc_tcl_path}/lib64/tclConfig.sh" "${tcc_tcl_path}/lib32/tclConfig.sh"; do
 +		if [ -f "${tcc_tcl_path_file}" ]; then
 +			eval `print_tcl_defs "${tcc_tcl_path_file}"`
 +			break
