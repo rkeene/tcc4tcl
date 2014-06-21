@@ -87,7 +87,7 @@ install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc4tcl.tcl tcc/libtcc1.a $(shell echo
 		done
 	$(srcdir)/patch-headers.sh "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include"
 
-test:
+test: test.tcl
 	rm -rf __TMP__
 	$(MAKE) install tcllibdir=$(shell pwd)/__TMP__
 	-if [ "$(PACKAGE_VERSION)" = '@@VERS@@' ]; then cd __TMP__/* && ( \
@@ -97,7 +97,7 @@ test:
 			rm -f "$${file}.new"; \
 		done \
 	); fi
-	$(TCLSH) $(srcdir)/test __TMP__
+	$(TCLSH) $(srcdir)/test.tcl __TMP__
 	echo Tests Completed OK > TEST-STATUS
 	rm -rf __TMP__
 
