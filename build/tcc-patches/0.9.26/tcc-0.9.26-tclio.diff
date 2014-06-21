@@ -97,7 +97,7 @@ diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1tclio/libtcc.c
          goto the_end;
 diff -uNr tcc-0.9.26.orig/tcc.c tcc-0.9.26-1tclio/tcc.c
 --- tcc-0.9.26.orig/tcc.c	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1tclio/tcc.c	2014-06-21 00:19:39.740011999 -0500
++++ tcc-0.9.26-1tclio/tcc.c	2014-06-21 12:37:45.060011999 -0500
 @@ -18,6 +18,10 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   */
@@ -119,7 +119,7 @@ diff -uNr tcc-0.9.26.orig/tcc.c tcc-0.9.26-1tclio/tcc.c
 +
 +    interp = Tcl_CreateInterp();
 +    if (interp != NULL) {
-+        Tcl_InitStubs(interp, "8.4", 0);
++        Tcl_InitStubs(interp, TCL_VERSION, 0);
 +    }
 +#endif
 +
