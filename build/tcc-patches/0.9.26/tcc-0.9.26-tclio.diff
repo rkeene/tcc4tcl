@@ -97,24 +97,23 @@ diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1tclio/libtcc.c
          goto the_end;
 diff -uNr tcc-0.9.26.orig/tcc.c tcc-0.9.26-1tclio/tcc.c
 --- tcc-0.9.26.orig/tcc.c	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1tclio/tcc.c	2014-06-21 12:37:45.060011999 -0500
-@@ -18,6 +18,10 @@
++++ tcc-0.9.26-1tclio/tcc.c	2014-06-21 13:05:54.330011999 -0500
+@@ -18,6 +18,7 @@
   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   */
  
-+#ifdef USE_TCL_STUBS
-+#define LIBTCC_USE_TCL_STUBS
-+#undef USE_TCL_STUBS
 +#endif
  #ifdef ONE_SOURCE
  #include "libtcc.c"
  #else
-@@ -248,7 +252,16 @@
+@@ -248,7 +249,18 @@
      int64_t start_time = 0;
      const char *first_file = NULL;
  
 -    s = tcc_new();
-+#ifdef LIBTCC_USE_TCL_STUBS
++#ifdef USE_TCL_STUBS
++#undef Tcl_CreateInterp
++#undef Tcl_InitStubs
 +    Tcl_Interp *interp;
 +
 +    interp = Tcl_CreateInterp();

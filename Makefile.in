@@ -29,7 +29,7 @@ srcdir = @srcdir@
 host_os = @host_os@
 @SET_MAKE@
 
-all: $(TARGET)
+all: $(TARGET) tcc/libtcc1.a
 
 tcc/config.h:
 	if [ "$(srcdir)" = "." ]; then \
@@ -43,7 +43,7 @@ tcc/libtcc.a: tcc/config.h
 	$(MAKE) -C tcc libtcc.a
 
 tcc/libtcc1.a: tcc/config.h
-	-$(MAKE) -C tcc tcc
+	-if [ '@build@' = '@host@' ]; then $(MAKE) -C tcc tcc; fi
 	$(MAKE) -C tcc libtcc1.a
 
 tcc4tcl.o: $(srcdir)/tcc4tcl.c $(srcdir)/tcc/tcc.h $(srcdir)/tcc/libtcc.h tcc/config.h
