@@ -90,7 +90,13 @@ install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc4tcl.tcl tcc/libtcc1.a $(shell echo
 test:
 	rm -rf __TMP__
 	$(MAKE) install tcllibdir=$(shell pwd)/__TMP__
-	-if [ "$(PACKAGE_VERSION)" = '@@VERS@@' ]; then cd __TMP__/* && sed -i 's|@@VERS@@|0.0.0.11|g' tcc4tcl.@SHOBJEXT@ pkgIndex.tcl; fi
+	-if [ "$(PACKAGE_VERSION)" = '@@VERS@@' ]; then cd __TMP__/* && ( \
+		for file in tcc4tcl.tcl pkgIndex.tcl; do \
+			sed 's/@@VERS@@/0.0/g' "$${file}" > "$${file}.new"; \
+			cat "$${file}.new" > "$${file}"; \
+			rm -f "$${file}.new"; \
+		done \
+	); fi
 	$(TCLSH) $(srcdir)/test __TMP__
 	echo Tests Completed OK > TEST-STATUS
 	rm -rf __TMP__

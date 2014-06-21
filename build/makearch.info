@@ -30,7 +30,7 @@ DOC_HDR="HEADER"
 
 # These files follow the same convention as DOCS, but don't have the header
 # tacked onto them.
-UPDATE_VARS="configure.ac configure"
+UPDATE_VARS="configure.ac configure tcc4tcl.tcl"
 
 # This script is executed immediately after copying the files
 # to a temp directory to attempt to compile

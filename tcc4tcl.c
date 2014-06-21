@@ -286,8 +286,7 @@ int Tcc4tcl_Init(Tcl_Interp *interp) {
 	}
 #endif
 
-	Tcl_CreateObjCommand(interp, PACKAGE_NAME, Tcc4tclCreateCmd, NULL, NULL);
-	Tcl_PkgProvide(interp, PACKAGE_NAME, PACKAGE_VERSION);
+	Tcl_CreateObjCommand(interp, "tcc4tcl", Tcc4tclCreateCmd, NULL, NULL);
 
 	return TCL_OK;
 }

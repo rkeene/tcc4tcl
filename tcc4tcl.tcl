@@ -395,3 +395,5 @@ proc ::tcc4tcl::wrap {name adefs rtype {body "#"} {cname ""}} {
 }
 
 namespace eval tcc4tcl {namespace export cproc new}
+
+package provide tcc4tcl "@@VERS@@"
