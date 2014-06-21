@@ -50,7 +50,7 @@ namespace eval tcc4tcl {
 
 			set callcmd ::tcc4tcl::_$cmd
 
-			if {![info command $callcmd]} {
+			if {[info command $callcmd] == ""} {
 				return -code error "unknown or ambiguous subcommand \"$cmd\": must be cproc, linktclcommand, code, tk, or go"
 			}
 
