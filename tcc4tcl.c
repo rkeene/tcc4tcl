@@ -50,6 +50,7 @@ static void Tcc4tclCCommandDeleteProc (ClientData cdata) {
 
 static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Obj * CONST objv[]){
 	Tcl_WideInt val;
+	Tcl_Obj *val_o;
 	void *val_p;
 	int index;
 	int res;
@@ -68,6 +69,7 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
 		TCC4TCL_DEFINE, TCC4TCL_GET_SYMBOL, TCC4TCL_OUTPUT_FILE, TCC4TCL_UNDEFINE
 	};
 	char *str;
+	int rv;
 
 	ts = (struct TclTCCState *) cdata;
 	s = ts->s;
@@ -123,7 +125,13 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
                 return TCL_ERROR;
             }
 
-            if (Tcl_GetWideIntFromObj(interp, objv[3], &val) != TCL_OK) {
+            rv = Tcl_ExprObj(interp, Tcl_ObjPrintf("wide(%s)", Tcl_GetString(objv[3])), &val_o);
+            if (rv != TCL_OK) {
+                return TCL_ERROR;
+            }
+
+            rv = Tcl_GetWideIntFromObj(interp, val_o, &val);
+            if (rv != TCL_OK) {
                 return TCL_ERROR;
             }
 
