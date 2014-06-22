@@ -49,7 +49,7 @@ static void Tcc4tclCCommandDeleteProc (ClientData cdata) {
 }
 
 static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Obj * CONST objv[]){
-	unsigned long val;
+	Tcl_WideInt val;
 	void *val_p;
 	int index;
 	int res;
@@ -123,7 +123,10 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
                 return TCL_ERROR;
             }
 
-            Tcl_GetLongFromObj(interp, objv[3], &val);
+            if (Tcl_GetWideIntFromObj(interp, objv[3], &val) != TCL_OK) {
+                return TCL_ERROR;
+            }
+
             val_p = (void *) val;
 
             tcc_add_symbol(s,Tcl_GetString(objv[2]), val_p); 
