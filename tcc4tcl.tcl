@@ -34,7 +34,7 @@ namespace eval tcc4tcl {
 			}
 		}
 
-		array set $handle [list tcc $tcc_handle code "" type $type filename $output package $pkgName]
+		array set $handle [list tcc $tcc_handle code "" type $type filename $output package $pkgName add_inc_path "" add_lib_path "" add_lib ""]
 
 		proc $handle {cmd args} [string map [list @@HANDLE@@ $handle] {
 			set handle {@@HANDLE@@}
@@ -64,6 +64,24 @@ namespace eval tcc4tcl {
 		upvar #0 $handle state
 
 		lappend state(procs) $cSymbol $tclCommand
+	}
+
+	proc _add_include_path {args} {
+		upvar #0 $handle state
+
+		lappend state(add_inc_path) {*}$args
+	}
+
+	proc _add_library_path {args} {
+		upvar #0 $handle state
+
+		lappend state(add_lib_path) {*}$args
+	}
+
+	proc _add_library {args} {
+		upvar #0 $handle state
+
+		lappend state(add_lib) {*}$args
 	}
 
 	proc _cproc {handle name adefs rtype {body "#"}} {
@@ -169,6 +187,18 @@ namespace eval tcc4tcl {
 		}
 
 		tcc4tcl $dir $tcc_type tcc
+
+		foreach dir $state(add_inc_path) {
+			tcc add_include_path $dir
+		}
+
+		foreach dir $state(add_lib_path) {
+			tcc add_library_path $dir
+		}
+
+		foreach lib $state(add_lib) {
+			tcc add_library $lib
+		}
 
 		switch -- $state(type) {
 			"memory" {
