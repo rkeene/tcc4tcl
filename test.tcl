@@ -69,7 +69,18 @@ if {[$handle code] == ""} {
 	error "[list $handle code] did not give code output"
 }
 $handle cproc test6 {int i} int { return(i + 42); }
-$handle add_library_path .
 $handle go
 puts [test5 1]
 puts [test6 1]
+
+set handle [tcc4tcl::new]
+$handle ccode {const char *curl_version(void);}
+$handle cproc curl_version {} char*
+$handle add_library_path /usr/lib64
+$handle add_library_path /usr/lib
+$handle add_library curl
+$handle go
+puts [curl_version]
+
+set handle [tcc4tcl::new]
+$handle delete

@@ -87,7 +87,7 @@ namespace eval tcc4tcl {
 	proc _cproc {handle name adefs rtype {body "#"}} {
 		upvar #0 $handle state
 
-		set wrap [::tcc4tcl::wrap $name $adefs $rtype $body]
+		set wrap [uplevel 1 [list ::tcc4tcl::wrap $name $adefs $rtype $body]]
 
 		set wrapped [lindex $wrap 0]
 		set wrapper [lindex $wrap 1]
@@ -325,7 +325,7 @@ proc ::tcc4tcl::wrap {name adefs rtype {body "#"} {cname ""}} {
 		append code $body
 		append code "\}\n"
 	} else {
-		append code "#define $cname $name" "\n"
+		append code "#define $cname [namespace tail $name]" "\n"
 	}
 
 	# Create wrapper function
