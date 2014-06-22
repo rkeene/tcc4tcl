@@ -60,25 +60,25 @@ namespace eval tcc4tcl {
 		return $handle
 	}
 
-	proc _linktclcommand {cSymbol tclCommand} {
+	proc _linktclcommand {handle cSymbol tclCommand} {
 		upvar #0 $handle state
 
 		lappend state(procs) $cSymbol $tclCommand
 	}
 
-	proc _add_include_path {args} {
+	proc _add_include_path {handle args} {
 		upvar #0 $handle state
 
 		lappend state(add_inc_path) {*}$args
 	}
 
-	proc _add_library_path {args} {
+	proc _add_library_path {handle args} {
 		upvar #0 $handle state
 
 		lappend state(add_lib_path) {*}$args
 	}
 
-	proc _add_library {args} {
+	proc _add_library {handle args} {
 		upvar #0 $handle state
 
 		lappend state(add_lib) {*}$args
@@ -109,6 +109,11 @@ namespace eval tcc4tcl {
 		upvar #0 $handle state
 
 		set state(tk) 1
+	}
+
+	proc _delete {handle} {
+		rename $handle ""
+		unset $handle
 	}
 
 	proc _go {handle {outputOnly 0}} {

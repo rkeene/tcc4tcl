@@ -69,6 +69,7 @@ if {[$handle code] == ""} {
 	error "[list $handle code] did not give code output"
 }
 $handle cproc test6 {int i} int { return(i + 42); }
+$handle add_library_path .
 $handle go
 puts [test5 1]
 puts [test6 1]
