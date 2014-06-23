@@ -78,8 +78,8 @@ puts [test6 1]
 set handle [tcc4tcl::new]
 $handle delete
 
-# External functions (requires .a files)
-if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)]} {
+# External functions (requires .so or .a (ELF) files which do not exist on Darwin)
+if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)] && $::tcl_platform(os) != "Darwin"} {
 	set handle [tcc4tcl::new]
 	$handle ccode {const char *curl_version(void);}
 	$handle cproc curl_version {} vstring
@@ -99,7 +99,8 @@ $handle go
 puts [wideTest 30]
 
 # Produce a loadable object
-if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)]} {
+## Currently doesn't work on Darwin
+if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)] && $::tcl_platform(os) != "Darwin"} {
 	set tmpfile "/tmp/DELETEME_tcc4tcl_test_exec[expr rand()].so"
 	file delete $tmpfile
 	set handle [tcc4tcl::new $tmpfile "myPkg 0.1"]
