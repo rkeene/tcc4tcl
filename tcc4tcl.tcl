@@ -121,6 +121,12 @@ namespace eval tcc4tcl {
 
 		set code $state(code)
 
+		if {$state(type) == "exe" || $state(type) == "dll"} {
+			if {[info exists state(procs)] && [llength $state(procs)] > 0} {
+				set code "int _initProcs(Tcl_Interp *interp);\n\n$code"
+			}
+		}
+
 		if {[info exists state(tk)]} {
 			set code "#include <tk.h>\n$code"
 		}
