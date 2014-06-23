@@ -81,7 +81,7 @@ $handle delete
 # External functions (requires .a files)
 set handle [tcc4tcl::new]
 $handle ccode {const char *curl_version(void);}
-$handle cproc curl_version {} char*
+$handle cproc curl_version {} vstring
 $handle add_library_path /usr/lib64
 $handle add_library_path /usr/lib
 $handle add_library curl
