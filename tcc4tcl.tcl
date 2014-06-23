@@ -5,14 +5,12 @@ namespace eval tcc4tcl {
 	variable count
 
 	set dir [file dirname [info script]]
+
 	if {[info command ::tcc4tcl] == ""} {
 		catch { load {} tcc4tcl }
 	}
 	if {[info command ::tcc4tcl] == ""} {
 		load [file join $dir tcc4tcl[info sharedlibextension]] tcc4tcl
-	}
-	if {[info command ::tcc4tcl] == ""} {
-		error "Unable to load tcc4tcl shared library"
 	}
 
 	set count 0
@@ -191,7 +189,11 @@ namespace eval tcc4tcl {
 			}
 		}
 
-		tcc4tcl $dir $tcc_type tcc
+		if {[info command ::tcc4tcl] == ""} {
+			return -code error "Unable to load tcc4tcl library"
+		}
+
+		::tcc4tcl $dir $tcc_type tcc
 
 		foreach path $state(add_inc_path) {
 			tcc add_include_path $path
