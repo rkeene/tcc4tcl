@@ -116,30 +116,32 @@ if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)] && $::tcl_platform(os) != "Darw
 }
 
 # More involved test
-set handle [tcc4tcl::new]
-$handle ccode {
+if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)]} {
+	set handle [tcc4tcl::new]
+	$handle ccode {
 #include <stdint.h>
 #include <curl/curl.h>
 }
-$handle cwrap curl_version {} vstring
-$handle cproc curl_fetch {char* url} ok {
-	void *handle;
+	$handle cwrap curl_version {} vstring
+	$handle cproc curl_fetch {char* url} ok {
+		void *handle;
 
-	handle = curl_easy_init();
-	if (!handle) {
-		return(TCL_ERROR);
+		handle = curl_easy_init();
+		if (!handle) {
+			return(TCL_ERROR);
+		}
+
+		curl_easy_setopt(handle, CURLOPT_URL, url);
+		curl_easy_perform(handle);
+
+		return(TCL_OK);
 	}
-
-	curl_easy_setopt(handle, CURLOPT_URL, url);
-	curl_easy_perform(handle);
-
-	return(TCL_OK);
-}
-$handle add_include_path /usr/include
-$handle add_library_path /usr/lib64
-$handle add_library_path /usr/lib
-$handle add_library_path /usr/lib32
-$handle add_library curl
-$handle go
+	$handle add_include_path /usr/include
+	$handle add_library_path /usr/lib64
+	$handle add_library_path /usr/lib
+	$handle add_library_path /usr/lib32
+	$handle add_library curl
+	$handle go
     
-curl_fetch http://rkeene.org/
+	curl_fetch http://rkeene.org/
+}
