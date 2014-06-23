@@ -96,3 +96,15 @@ $handle cproc wideTest {Tcl_WideInt x} Tcl_WideInt {
 $handle go
 puts [wideTest 30]
 
+# Produce a loadable object
+set tmpfile "/tmp/DELETEME_tcc4tcl_test_exec[expr rand()].so"
+file delete $tmpfile
+set handle [tcc4tcl::new $tmpfile "myPkg 0.1"]
+$handle cproc ext_add {int a int b} long { return(a+b); }
+$handle add_library_path /usr/lib64
+$handle add_library_path /usr/lib
+$handle add_library tclstub8.5
+$handle go
+load $tmpfile myPkg
+puts [ext_add 1 42]
+file delete $tmpfile
