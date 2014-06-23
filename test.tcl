@@ -84,6 +84,7 @@ if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)]} {
 	$handle cwrap curl_version {} vstring
 	$handle add_library_path /usr/lib64
 	$handle add_library_path /usr/lib
+	$handle add_library_path /usr/lib32
 	$handle add_library curl
 	$handle go
 	puts [curl_version]
@@ -106,9 +107,36 @@ if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)] && $::tcl_platform(os) != "Darw
 	$handle cproc ext_add {int a int b} long { return(a+b); }
 	$handle add_library_path /usr/lib64
 	$handle add_library_path /usr/lib
+	$handle add_library_path /usr/lib32
 	$handle add_library tclstub8.5
 	$handle go
 	load $tmpfile myPkg
 	puts [ext_add 1 42]
 	file delete $tmpfile
 }
+
+# More involved test
+set handle [tcc4tcl::new]
+$handle ccode {#include <curl/curl.h>}
+$handle cwrap curl_version {} vstring
+$handle cproc curl_fetch {char* url} ok {
+	void *handle;
+
+	handle = curl_easy_init();
+	if (!handle) {
+		return(TCL_ERROR);
+	}
+
+	curl_easy_setopt(handle, CURLOPT_URL, url);
+	curl_easy_perform(handle);
+
+	return(TCL_OK);
+}
+$handle add_include_path /usr/include
+$handle add_library_path /usr/lib64
+$handle add_library_path /usr/lib
+$handle add_library_path /usr/lib32
+$handle add_library curl
+$handle go
+    
+curl_fetch http://rkeene.org/
