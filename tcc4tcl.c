@@ -39,11 +39,7 @@ static void Tcc4tclCCommandDeleteProc (ClientData cdata) {
 	ts = (struct TclTCCState *) cdata;
 	s = ts->s;
 
-	/* We can delete the compiler if the output was not to memory */
-	if (s->output_type != TCC_OUTPUT_MEMORY) {
-		tcc_delete(s);
-		ts->s = NULL;
-	}
+	ts->s = NULL;
 
 	ckfree((void *) ts);
 }
