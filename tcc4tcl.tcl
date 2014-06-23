@@ -82,6 +82,21 @@ namespace eval tcc4tcl {
 		lappend state(add_lib) {*}$args
 	}
 
+	proc _cwrap {handle name adefs rtype} {
+		upvar #0 $handle state
+
+		set wrap [uplevel 1 [list ::tcc4tcl::wrap $name $adefs $rtype "#" "" 1]]
+
+		set wrapped [lindex $wrap 0]
+		set wrapper [lindex $wrap 1]
+		set tclname [lindex $wrap 2]
+
+		append state(code) $wrapped "\n"
+		append state(code) $wrapper "\n"
+
+		lappend state(procs) $name $tclname
+	}
+
 	proc _cproc {handle name adefs rtype {body "#"}} {
 		upvar #0 $handle state
 
@@ -273,7 +288,7 @@ proc ::tcc4tcl::cproc {name adefs rtype {body "#"}} {
 	return [$handle go]
 }
 
-proc ::tcc4tcl::wrap {name adefs rtype {body "#"} {cname ""}} {
+proc ::tcc4tcl::wrap {name adefs rtype {body "#"} {cname ""} {includePrototype 0}} {
 	if {$cname == ""} {
 		set cname c_[tcc4tcl::cleanname $name]
 	}
@@ -328,17 +343,22 @@ proc ::tcc4tcl::wrap {name adefs rtype {body "#"} {cname ""}} {
 	}
 
 	# Create wrapped function
+	if {[llength $cargs] != 0} {
+		set cargs_str [join $cargs {, }]
+	} else {
+		set cargs_str "void"
+	}
+
 	if {$body ne "#"} {
-		if {[llength $cargs] != 0} {
-			set cargs_str [join $cargs {, }]
-		} else {
-			set cargs_str "void"
-		}
 		append code "static $rtype2 ${cname}($cargs_str) \{\n"
 		append code $body
 		append code "\}\n"
 	} else {
 		set cname [namespace tail $name]
+
+		if {$includePrototype} {
+			append code "$rtype2 ${cname}($cargs_str);\n"
+		}
 	}
 
 	# Create wrapper function

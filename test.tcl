@@ -81,8 +81,7 @@ $handle delete
 # External functions (requires .so or .a (ELF) files which do not exist on Darwin)
 if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)] && $::tcl_platform(os) != "Darwin"} {
 	set handle [tcc4tcl::new]
-	$handle ccode {const char *curl_version(void);}
-	$handle cproc curl_version {} vstring
+	$handle cwrap curl_version {} vstring
 	$handle add_library_path /usr/lib64
 	$handle add_library_path /usr/lib
 	$handle add_library curl
