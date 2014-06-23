@@ -1,6 +1,6 @@
 diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1sharedlibfix/libtcc.c
 --- tcc-0.9.26.orig/libtcc.c	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1sharedlibfix/libtcc.c	2014-06-23 14:18:02.279507000 -0500
++++ tcc-0.9.26-1sharedlibfix/libtcc.c	2014-06-23 14:34:51.289507000 -0500
 @@ -1189,6 +1189,18 @@
  #endif
          tcc_error_noabort("unrecognized ELF file");
@@ -27,7 +27,7 @@ diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1sharedlibfix/libtcc.c
 +#  ifdef SHOBJEXT
 +#    define str1(s) str2(s)
 +#    define str2(s) #s
-+    const char *libs[] = { "%s/lib%s" str1(SHOBJEXT), "%s/lib%s.a", NULL };
++    const char *libs[] = { "%s/lib%s." str1(SHOBJEXT), "%s/lib%s.a", NULL };
 +#    undef str1
 +#    undef str2
 +#  else
