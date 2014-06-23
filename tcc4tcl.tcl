@@ -330,7 +330,7 @@ proc ::tcc4tcl::wrap {name adefs rtype {body "#"} {cname ""}} {
 		append code $body
 		append code "\}\n"
 	} else {
-		append code "#define $cname [namespace tail $name]" "\n"
+		set cname [namespace tail $name]
 	}
 
 	# Create wrapper function
