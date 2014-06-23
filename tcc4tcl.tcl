@@ -321,7 +321,12 @@ proc ::tcc4tcl::wrap {name adefs rtype {body "#"} {cname ""}} {
 
 	# Create wrapped function
 	if {$body ne "#"} {
-		append code "static $rtype2 ${cname}([join $cargs {, }]) \{\n"
+		if {[llength $cargs] != 0} {
+			set cargs_str [join $cargs {, }]
+		} else {
+			set cargs_str "void"
+		}
+		append code "static $rtype2 ${cname}($cargs_str) \{\n"
 		append code $body
 		append code "\}\n"
 	} else {
