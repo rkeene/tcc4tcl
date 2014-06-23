@@ -338,11 +338,12 @@ proc ::tcc4tcl::wrap {name adefs rtype {body "#"} {cname ""}} {
 	##   char*
 	##   Tcl_Obj*
 	##   void*
+	##   Tcl_WideInt
 	foreach x $varnames {
 		set t $types($x)
 
 		switch -- $t {
-			int - long - float - double - char* - Tcl_Obj* {
+			int - long - float - double - char* - Tcl_WideInt - Tcl_Obj* {
 				append cbody "  $types($x) _$x;" "\n"
 			}
 			default {
@@ -370,6 +371,10 @@ proc ::tcc4tcl::wrap {name adefs rtype {body "#"} {cname ""}} {
 			}
 			long {
 				append cbody "  if (Tcl_GetLongFromObj(ip, objv\[$n], &_$x) != TCL_OK)"
+				append cbody "    return TCL_ERROR;" "\n"
+			}
+			Tcl_WideInt {
+				append cbody "  if (Tcl_GetWideIntFromObj(ip, objv\[$n], &_$x) != TCL_OK)"
 				append cbody "    return TCL_ERROR;" "\n"
 			}
 			float {
@@ -412,9 +417,9 @@ proc ::tcc4tcl::wrap {name adefs rtype {body "#"} {cname ""}} {
 	#   dstring   (TCL_DYNAMIC char*)
 	#   vstring   (TCL_VOLATILE char*)
 	#   default   (Tcl_Obj*)
-	#   wide
+	#   Tcl_WideInt
 	switch -- $rtype {
-		void - ok - int - long - float - double - wide {}
+		void - ok - int - long - float - double - Tcl_WideInt {}
 		default {
 			append cbody "  if (rv == NULL) {\n"
 			append cbody "    return(TCL_ERROR);\n"
@@ -427,6 +432,7 @@ proc ::tcc4tcl::wrap {name adefs rtype {body "#"} {cname ""}} {
 		ok             { append cbody "  return rv;" "\n" }
 		int            { append cbody "  Tcl_SetIntObj(Tcl_GetObjResult(ip), rv);" "\n" }
 		long           { append cbody "  Tcl_SetLongObj(Tcl_GetObjResult(ip), rv);" "\n" }
+		Tcl_WideInt    { append cbody "  Tcl_SetWideIntObj(Tcl_GetObjResult(ip), rv);" "\n" }
 		float          -
 		double         { append cbody "  Tcl_SetDoubleObj(Tcl_GetObjResult(ip), rv);" "\n" }
 		char*          { append cbody "  Tcl_SetResult(ip, rv, TCL_STATIC);" "\n" }
