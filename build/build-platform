@@ -64,6 +64,9 @@ case "${platform}" in
 	netbsd-amd64)
 		platform="x86_64-unknown-netbsd5"
 		;;
+	freebsd-amd64)
+		platform="x86_64-unknown-freebsd8"
+		;;
 	'')
 		exit 0
 		;;
