@@ -1,0 +1,11 @@
+diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1defaultshared/libtcc.c
+--- tcc-0.9.26.orig/libtcc.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1defaultshared/libtcc.c	2014-06-22 21:19:12.879507000 -0500
+@@ -908,6 +908,7 @@
+     s->output_type = TCC_OUTPUT_MEMORY;
+     preprocess_new();
+     s->include_stack_ptr = s->include_stack;
++    s->static_link = 0;
+ 
+     /* we add dummy defines for some special macros to speed up tests
+        and to have working defined() */
