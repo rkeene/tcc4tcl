@@ -1,12 +1,14 @@
+Binary files tcc-0.9.26.orig/.libtcc.c.swp and tcc-0.9.26-1sharedlibfix/.libtcc.c.swp differ
 diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1sharedlibfix/libtcc.c
 --- tcc-0.9.26.orig/libtcc.c	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1sharedlibfix/libtcc.c	2014-06-23 14:34:51.289507000 -0500
-@@ -1189,6 +1189,18 @@
++++ tcc-0.9.26-1sharedlibfix/libtcc.c	2014-06-23 15:29:04.679507000 -0500
+@@ -1189,6 +1189,20 @@
  #endif
          tcc_error_noabort("unrecognized ELF file");
          goto the_end;
 +    } else {
 +#ifdef TCC_IS_NATIVE
++#ifndef TCC_TARGET_PE
 +        if (s1->output_type == TCC_OUTPUT_MEMORY) {
 +            /* If it's not an ELF file, but dlopen() can open it, do that. */
 +            void *h;
@@ -17,10 +19,11 @@ diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1sharedlibfix/libtcc.c
 +            }
 +        }
 +#endif
++#endif
      }
  
      if (memcmp((char *)&ehdr, ARMAG, 8) == 0) {
-@@ -1269,7 +1281,15 @@
+@@ -1269,7 +1283,15 @@
      const char *libs[] = { "%s/%s.def", "%s/lib%s.def", "%s/%s.dll", "%s/lib%s.dll", "%s/lib%s.a", NULL };
      const char **pp = s->static_link ? libs + 4 : libs;
  #else
