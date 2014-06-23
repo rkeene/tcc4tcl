@@ -117,7 +117,10 @@ if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)] && $::tcl_platform(os) != "Darw
 
 # More involved test
 set handle [tcc4tcl::new]
-$handle ccode {#include <curl/curl.h>}
+$handle ccode {
+#include <stdint.h>
+#include <curl/curl.h>
+}
 $handle cwrap curl_version {} vstring
 $handle cproc curl_fetch {char* url} ok {
 	void *handle;

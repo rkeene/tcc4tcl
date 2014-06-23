@@ -1,0 +1,13 @@
+diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1extradefines/libtcc.c
+--- tcc-0.9.26.orig/libtcc.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1extradefines/libtcc.c	2014-06-23 15:00:38.479507000 -0500
+@@ -980,6 +980,9 @@
+ #else
+     tcc_define_symbol(s, "__WCHAR_TYPE__", "int");
+ #endif
++#ifdef __LP64__
++    tcc_define_symbol(s, "__LP64__", "1");
++#endif
+ 
+ #ifndef TCC_TARGET_PE
+     /* glibc defines */
