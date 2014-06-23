@@ -43,7 +43,7 @@ tcc/libtcc.a: tcc/config.h
 	$(MAKE) -C tcc libtcc.a
 
 tcc/libtcc1.a: tcc/config.h
-	-if [ '@build@' = '@host@' ]; then $(MAKE) -C tcc tcc; fi
+	-$(MAKE) -C tcc tcc@EXEEXT@
 	$(MAKE) -C tcc libtcc1.a
 
 tcc4tcl.o: $(srcdir)/tcc4tcl.c $(srcdir)/tcc/tcc.h $(srcdir)/tcc/libtcc.h tcc/config.h
@@ -97,7 +97,7 @@ test: test.tcl
 			rm -f "$${file}.new"; \
 		done \
 	); fi
-	$(TCLSH) $(srcdir)/test.tcl __TMP__
+	if [ '@build@' = '@host@' ]; then TCC4TCL_TEST_RUN_NATIVE=1; export TCC4TCL_TEST_RUN_NATIVE; fi; $(TCLSH) $(srcdir)/test.tcl __TMP__
 	echo Tests Completed OK > TEST-STATUS
 	rm -rf __TMP__
 
