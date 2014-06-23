@@ -23,7 +23,7 @@ TCLCONFIGPATH = @TCLCONFIGPATH@
 TCL_PACKAGE_PATH = @TCL_PACKAGE_PATH@
 tcllibdir = $(shell if echo "$(libdir)" | grep '^UNSPECIFIED' >/dev/null; then echo $(TCL_PACKAGE_PATH); else echo "$(libdir)"; fi)
 PACKAGE_INSTALL_DIR = $(tcllibdir)/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
-TCC_CONFIGURE_OPTS = --cc='$(CC)' --extra-cflags='$(CPPFLAGS) $(CFLAGS) @TCC_EXTRA_CFLAGS@' --with-tcl=$(TCLCONFIGPATH) --sysincludepaths='{B}/include@HOST_PATH_SEPARATOR@{B}/include/1@HOST_PATH_SEPARATOR@{B}/include/2@HOST_PATH_SEPARATOR@{B}/include/3@HOST_PATH_SEPARATOR@{B}/include/4@HOST_PATH_SEPARATOR@{B}/include/5@HOST_PATH_SEPARATOR@{B}/include/6@HOST_PATH_SEPARATOR@{B}/include/7@HOST_PATH_SEPARATOR@{B}/include/8@HOST_PATH_SEPARATOR@{B}/include/9' --libpaths='{B}/lib' @TCC_CONFIGURE_OPTS@
+TCC_CONFIGURE_OPTS = --cc='$(CC)' --extra-cflags='$(CPPFLAGS) $(CFLAGS) -DSHOBJEXT=@SHOBJEXT@ @TCC_EXTRA_CFLAGS@' --with-tcl=$(TCLCONFIGPATH) --sysincludepaths='{B}/include@HOST_PATH_SEPARATOR@{B}/include/1@HOST_PATH_SEPARATOR@{B}/include/2@HOST_PATH_SEPARATOR@{B}/include/3@HOST_PATH_SEPARATOR@{B}/include/4@HOST_PATH_SEPARATOR@{B}/include/5@HOST_PATH_SEPARATOR@{B}/include/6@HOST_PATH_SEPARATOR@{B}/include/7@HOST_PATH_SEPARATOR@{B}/include/8@HOST_PATH_SEPARATOR@{B}/include/9' --libpaths='{B}/lib' @TCC_CONFIGURE_OPTS@
 INSTALL_HEADERS = tcl.h assert.h ctype.h errno.h float.h limits.h locale.h math.h setjmp.h signal.h stdarg.h stddef.h stdint.h stdio.h stdlib.h string.h time.h wctype.h
 srcdir = @srcdir@
 host_os = @host_os@

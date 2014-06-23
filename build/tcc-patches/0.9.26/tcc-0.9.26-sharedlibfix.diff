@@ -1,0 +1,38 @@
+diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1sharedlibfix/libtcc.c
+--- tcc-0.9.26.orig/libtcc.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1sharedlibfix/libtcc.c	2014-06-23 14:18:02.279507000 -0500
+@@ -1189,6 +1189,18 @@
+ #endif
+         tcc_error_noabort("unrecognized ELF file");
+         goto the_end;
++    } else {
++#ifdef TCC_IS_NATIVE
++        if (s1->output_type == TCC_OUTPUT_MEMORY) {
++            /* If it's not an ELF file, but dlopen() can open it, do that. */
++            void *h;
++            h = dlopen(filename, RTLD_GLOBAL | RTLD_LAZY);
++            if (h) {
++                ret = 0;
++                goto the_end;
++            }
++        }
++#endif
+     }
+ 
+     if (memcmp((char *)&ehdr, ARMAG, 8) == 0) {
+@@ -1269,7 +1281,15 @@
+     const char *libs[] = { "%s/%s.def", "%s/lib%s.def", "%s/%s.dll", "%s/lib%s.dll", "%s/lib%s.a", NULL };
+     const char **pp = s->static_link ? libs + 4 : libs;
+ #else
++#  ifdef SHOBJEXT
++#    define str1(s) str2(s)
++#    define str2(s) #s
++    const char *libs[] = { "%s/lib%s" str1(SHOBJEXT), "%s/lib%s.a", NULL };
++#    undef str1
++#    undef str2
++#  else
+     const char *libs[] = { "%s/lib%s.so", "%s/lib%s.a", NULL };
++#  endif
+     const char **pp = s->static_link ? libs + 1 : libs;
+ #endif
+     while (*pp) {
