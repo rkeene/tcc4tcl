@@ -20,7 +20,6 @@ namespace eval tcc4tcl {
 		variable count
 
 		set handle ::tcc4tcl::tcc_[incr count]
-		set tcc_handle ::tcc4tcl::tcc_[incr count]
 
 		if {$output == ""} {
 			set type "memory"
@@ -32,7 +31,7 @@ namespace eval tcc4tcl {
 			}
 		}
 
-		array set $handle [list tcc $tcc_handle code "" type $type filename $output package $pkgName add_inc_path "" add_lib_path "" add_lib ""]
+		array set $handle [list code "" type $type filename $output package $pkgName add_inc_path "" add_lib_path "" add_lib ""]
 
 		proc $handle {cmd args} [string map [list @@HANDLE@@ $handle] {
 			set handle {@@HANDLE@@}
