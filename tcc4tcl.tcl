@@ -193,12 +193,12 @@ namespace eval tcc4tcl {
 
 		tcc4tcl $dir $tcc_type tcc
 
-		foreach dir $state(add_inc_path) {
-			tcc add_include_path $dir
+		foreach path $state(add_inc_path) {
+			tcc add_include_path $path
 		}
 
-		foreach dir $state(add_lib_path) {
-			tcc add_library_path $dir
+		foreach path $state(add_lib_path) {
+			tcc add_library_path $path
 		}
 
 		foreach lib $state(add_lib) {
