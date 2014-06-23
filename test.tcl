@@ -63,6 +63,7 @@ if {$err != "" || $v == 1} {
 }
 
 # New API
+## Simple test
 set handle [tcc4tcl::new]
 $handle cproc test5 {int i} int { return(i + 42); }
 if {[$handle code] == ""} {
@@ -73,6 +74,11 @@ $handle go
 puts [test5 1]
 puts [test6 1]
 
+## Delete without performing
+set handle [tcc4tcl::new]
+$handle delete
+
+# External functions (requires .a files)
 set handle [tcc4tcl::new]
 $handle ccode {const char *curl_version(void);}
 $handle cproc curl_version {} char*
@@ -82,5 +88,11 @@ $handle add_library curl
 $handle go
 puts [curl_version]
 
+# wide values
 set handle [tcc4tcl::new]
-$handle delete
+$handle cproc wideTest {Tcl_WideInt x} Tcl_WideInt {
+	return(x);
+}
+$handle go
+puts [wideTest 30]
+
