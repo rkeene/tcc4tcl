@@ -1,0 +1,20 @@
+diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1unix/configure
+--- tcc-0.9.26.orig/configure	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1unix/configure	2014-06-24 15:47:30.088507000 -0500
+@@ -1,4 +1,4 @@
+-#!/bin/sh
++#!/usr/bin/env bash
+ #
+ # tcc configure script (c) 2003 Fabrice Bellard
+ 
+@@ -527,7 +527,9 @@
+          esac
+          ;;
+     esac
+-    ln -sfn $tgt $2
++    if [ ! -d "$2" ]; then
++        ln -s -f $tgt $2
++    fi
+ }
+ 
+ if test "$source_path_used" = "yes" ; then
