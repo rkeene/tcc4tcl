@@ -1,6 +1,6 @@
 diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1unix/configure
 --- tcc-0.9.26.orig/configure	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-1unix/configure	2014-06-24 15:47:30.088507000 -0500
++++ tcc-0.9.26-1unix/configure	2014-06-24 16:31:54.358507000 -0500
 @@ -1,4 +1,4 @@
 -#!/bin/sh
 +#!/usr/bin/env bash
@@ -13,7 +13,7 @@ diff -uNr tcc-0.9.26.orig/configure tcc-0.9.26-1unix/configure
      esac
 -    ln -sfn $tgt $2
 +    if [ ! -d "$2" ]; then
-+        ln -s -f $tgt $2
++        ln -f -s $tgt $2
 +    fi
  }
  
