@@ -188,7 +188,7 @@ namespace eval tcc4tcl {
 						set return_failure "return(TCL_ERROR)"
 					}
 					double - float {
-						set return_failure "return(NaN)"
+						set return_failure "return(($rtype) ((($rtype) 1.0) / (($rtype) 0.0)))"
 					}
 					default {
 						set return_failure "return(NULL)"
