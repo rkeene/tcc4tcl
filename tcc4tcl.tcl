@@ -151,17 +151,25 @@ namespace eval tcc4tcl {
 		# If we aren't creating a new interp, it must be the first argument
 		# If the definition of this proc already includes the interp
 		# argument, use it -- otherwise add one
-		if {[lindex $adefs 0] != "Tcl_Interp*"} {
-			set newInterp 1
-		} else {
-			set newInterp 0
-			set interp_name [lindex $adefs 1]
+		set newInterp 1
+		foreach {type var} $adefs {
+			if {$type == "Tcl_Interp*"} {
+				set newInterp 0
+				set interp_name $var
+
+				break
+			}
 		}
 
 		# Create the C-style argument definition
 		foreach {type var} $adefs {
 			lappend adefs_c [list $type $var]
 			set types($var) $type
+
+			if {$type == "Tcl_Interp*"} {
+				continue
+			}
+
 			lappend args $var
 		}
 
@@ -211,14 +219,10 @@ namespace eval tcc4tcl {
 		if {$newInterp} {
 			set interp_name "ip"
 			_ccode $handle "    Tcl_Interp *${interp_name};"
-
-			set args_nointerp $args
-		} else {
-			set args_nointerp [lrange $args 1 end]
 		}
 
 		# Declare Tcl_Obj variables
-		_ccode $handle "    Tcl_Obj *_[join $args_nointerp {, *_}];"
+		_ccode $handle "    Tcl_Obj *_[join $args {, *_}];"
 
 		_ccode $handle ""
 
@@ -229,7 +233,7 @@ namespace eval tcc4tcl {
 		}
 
 		# Process all arguments
-		foreach arg $args_nointerp {
+		foreach arg $args {
 			set type $types($arg)
 			switch -- $type {
 				int - long - Tcl_WideInt - float - double {
@@ -263,7 +267,7 @@ namespace eval tcc4tcl {
 
 		_ccode $handle ""
 		_ccode $handle "    tclrv = Tcl_Eval($interp_name, \"$cbody\");"
-		_ccode $handle "    if (tclrv != TCL_OK) $return_failure;"
+		_ccode $handle "    if (tclrv != TCL_OK && tclrv != TCL_RETURN) $return_failure;"
 		_ccode $handle ""
 
 		if {$rtype != "ok" && $rtype != "void"} {
@@ -297,8 +301,8 @@ namespace eval tcc4tcl {
 			char* {
 				_ccode $handle "    rv = Tcl_GetString(rv_interp);"
 			}
-			char* {
-				_ccode $handle "    rv = Tcl_GetString(rv_interp);"
+			Tcl_Obj* {
+				_ccode $handle "    rv = rv_interp;"
 			}
 		}
 

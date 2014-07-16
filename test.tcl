@@ -147,13 +147,14 @@ if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)]} {
 }
 
 set handle [tcc4tcl::new]
-$handle proc callToTcl {int a int b} int {
+$handle proc callToTcl {Tcl_Interp* ip int a int b} int {
 	set retval [expr {$a + $b}]
 
 	return $retval
 }
-$handle cwrap callToTcl {int a int b} int
+$handle cwrap callToTcl {Tcl_Interp* ip int a int b} int
+puts [$handle code]
 $handle go
 if {[callToTcl 3 5] != 8} {
-	error "3 + 5 is 8"
+	error "3 + 5 is 8, not [callToTcl 3 5]"
 }
