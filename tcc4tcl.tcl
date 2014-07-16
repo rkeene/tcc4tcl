@@ -230,10 +230,16 @@ namespace eval tcc4tcl {
 
 		_ccode $handle ""
 
+		# Create a new interp if needed, otherwise create a temporary procedure
 		if {$newInterp} {
 			_ccode $handle "    ${interp_name}  = Tcl_CreateInterp();"
 			_ccode $handle "    if (!${interp_name}) $return_failure;"
 			_ccode $handle ""
+
+			set procname ""
+		} else {
+			set procname "::tcc4tcl::tmp::proc[clock clicks]"
+			set cbody "namespace eval ::tcc4tcl {}; namespace eval ::tcc4tcl::tmp {}; proc ${procname} {$args} { $cbody }"
 		}
 
 		# Process all arguments
@@ -266,12 +272,37 @@ namespace eval tcc4tcl {
 					return -code error "Unknown type: $type"
 				}
 			}
-			_ccode $handle "    if (!Tcl_ObjSetVar2(${interp_name}, Tcl_NewStringObj(\"${arg}\", -1), NULL, _$arg, 0)) $return_failure;"
+
+			if {$procname == ""} {
+				_ccode $handle "    if (!Tcl_ObjSetVar2(${interp_name}, Tcl_NewStringObj(\"${arg}\", -1), NULL, _$arg, 0)) $return_failure;"
+			}
 		}
 		_ccode $handle ""
 
 		# Evaluate script
-		_ccode $handle "    tclrv = Tcl_Eval($interp_name, \"$cbody\");"
+		if {$procname != ""} {
+			_ccode $handle "    static int proc_defined = 0;"
+			_ccode $handle "    if (proc_defined == 0) \{"
+			_ccode $handle "        proc_defined = 1;"
+			set extra_space "    "
+		} else {
+			set extra_space ""
+		}
+
+		_ccode $handle "${extra_space}    tclrv = Tcl_Eval($interp_name, \"$cbody\");"
+		_ccode $handle "${extra_space}    if (tclrv != TCL_OK && tclrv != TCL_RETURN) $return_failure;"
+
+		if {$procname != ""} {
+			_ccode $handle "    \}"
+			set i 0
+			_ccode $handle "    Tcl_Obj *objv\[[expr {[llength $args] + 1}]\];"
+			_ccode $handle "    objv\[$i\] = Tcl_NewStringObj(\"$procname\", -1);"
+			foreach arg $args {
+				incr i
+				_ccode $handle "    objv\[$i\] = _$arg;"
+			}
+			_ccode $handle "    tclrv = Tcl_EvalObjv($interp_name, [expr {[llength $args] + 1}], objv, 0);"
+		}
 		_ccode $handle "    if (tclrv != TCL_OK && tclrv != TCL_RETURN) $return_failure;"
 		_ccode $handle ""
 
@@ -310,6 +341,11 @@ namespace eval tcc4tcl {
 			Tcl_Obj* {
 				_ccode $handle "    rv = rv_interp;"
 			}
+		}
+
+		# Cleanup created interp if needed
+		if {$newInterp} {
+			_ccode $handle "    Tcl_DeleteInterp(${interp_name});"
 		}
 
 		# Return value
