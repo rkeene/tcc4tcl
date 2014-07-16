@@ -179,6 +179,16 @@ namespace eval tcc4tcl {
 			set adefs_c [join $adefs_c {, }]
 		}
 
+		# Determine actual C return type:
+		switch -- $rtype {
+			"ok" {
+				set rtype_c "int"
+			}
+			default {
+				set rtype_c $rtype
+			}
+		}
+
 		# Determine how to return in failure
 		if {$rtype != "void"} {
 			if {[info exists returnErrorValue]} {
@@ -204,7 +214,7 @@ namespace eval tcc4tcl {
 		}
 
 		# Define the C function
-		_ccode $handle "$rtype $cname\($adefs_c) \{"
+		_ccode $handle "$rtype_c $cname\($adefs_c) \{"
 
 		## Define the Tcl return value checking variable
 		_ccode $handle "    int tclrv;"
@@ -216,7 +226,7 @@ namespace eval tcc4tcl {
 
 		## If we are returning a value, declare a variable for that
 		if {$rtype != "void"} {
-			_ccode $handle "    $rtype rv;"
+			_ccode $handle "    $rtype_c rv;"
 		}
 
 		## If we need to create a new interpreter, do so
@@ -320,7 +330,7 @@ namespace eval tcc4tcl {
 		switch -- $rtype {
 			void { }
 			ok {
-				_ccode $handle "    rv = 0;"
+				_ccode $handle "    rv = TCL_OK;"
 			}
 			int {
 				_ccode $handle "    if (Tcl_GetIntFromObj(ip, rv_interp, &rv) != TCL_OK) $return_failure;"

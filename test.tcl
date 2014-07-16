@@ -171,5 +171,11 @@ puts [callToTcl1 3]
 
 set handle [tcc4tcl::new]
 $handle proc callToTclBinary {char* blob int blob_Length} ok {
-	puts "Blob: $blob"
+	puts "Blob: $blob ([string length $blob])"
 }
+$handle cproc callToTclBinaryWrapper {} void {
+	callToTclBinary("test\x00test", 9);
+}
+puts [$handle code]
+$handle go
+callToTclBinaryWrapper
