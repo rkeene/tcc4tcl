@@ -168,3 +168,8 @@ $handle proc callToTcl1 {int x} float {
 $handle cwrap callToTcl1 {int x} float
 $handle go
 puts [callToTcl1 3]
+
+set handle [tcc4tcl::new]
+$handle proc callToTclBinary {char* blob int blob_Length} ok {
+	puts "Blob: $blob"
+}

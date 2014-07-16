@@ -263,9 +263,9 @@ namespace eval tcc4tcl {
 					_ccode $handle "    if (!_$arg) $return_failure;"
 				}
 				char* {
-					if {[info exists $types(${arg}_MemberCount)] && [info exists $types(${arg}_MemberLength)]} {
+					if {[info exists types(${arg}_MemberCount)] && [info exists types(${arg}_MemberLength)]} {
 						_ccode $handle "    _$arg = Tcl_NewByteArrayObj($arg, ${arg}_MemberCount * ${arg}_MemberLength);"
-					} elseif {[info exists $types(${arg}_Length)]} {
+					} elseif {[info exists types(${arg}_Length)]} {
 						_ccode $handle "    _$arg = Tcl_NewByteArrayObj($arg, ${arg}_Length);"
 					} else {
 						_ccode $handle "    _$arg = Tcl_NewStringObj($arg, -1);"
