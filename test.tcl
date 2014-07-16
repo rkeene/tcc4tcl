@@ -82,6 +82,7 @@ $handle delete
 if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)]} {
 	set handle [tcc4tcl::new]
 	$handle cwrap curl_version {} vstring
+	$handle add_library_path [::tcl::pkgconfig get libdir,runtime]
 	$handle add_library_path /usr/lib64
 	$handle add_library_path /usr/lib
 	$handle add_library_path /usr/lib32
@@ -105,6 +106,7 @@ if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)] && $::tcl_platform(os) != "Darw
 	file delete $tmpfile
 	set handle [tcc4tcl::new $tmpfile "myPkg 0.1"]
 	$handle cproc ext_add {int a int b} long { return(a+b); }
+	$handle add_library_path [::tcl::pkgconfig get libdir,runtime]
 	$handle add_library_path /usr/lib64
 	$handle add_library_path /usr/lib
 	$handle add_library_path /usr/lib32
@@ -137,6 +139,7 @@ if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)]} {
 		return(TCL_OK);
 	}
 	$handle add_include_path /usr/include
+	$handle add_library_path [::tcl::pkgconfig get libdir,runtime]
 	$handle add_library_path /usr/lib64
 	$handle add_library_path /usr/lib
 	$handle add_library_path /usr/lib32
@@ -159,9 +162,9 @@ if {[callToTcl 3 5] != 8} {
 }
 
 set handle [tcc4tcl::new]
-$handle proc callToTcl1 {} float {
+$handle proc callToTcl1 {int x} float {
 	return 0.1
 }
-$handle cwrap callToTcl1 {} float
+$handle cwrap callToTcl1 {int x} float
 $handle go
-puts [callToTcl1]
+puts [callToTcl1 3]
