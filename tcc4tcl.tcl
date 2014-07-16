@@ -268,12 +268,14 @@ namespace eval tcc4tcl {
 			}
 			_ccode $handle "    if (!Tcl_ObjSetVar2(${interp_name}, Tcl_NewStringObj(\"${arg}\", -1), NULL, _$arg, 0)) $return_failure;"
 		}
-
 		_ccode $handle ""
+
+		# Evaluate script
 		_ccode $handle "    tclrv = Tcl_Eval($interp_name, \"$cbody\");"
 		_ccode $handle "    if (tclrv != TCL_OK && tclrv != TCL_RETURN) $return_failure;"
 		_ccode $handle ""
 
+		# Handle return value
 		if {$rtype != "ok" && $rtype != "void"} {
 			_ccode $handle "    rv_interp = Tcl_GetObjResult(${interp_name});"
 		}
@@ -310,6 +312,7 @@ namespace eval tcc4tcl {
 			}
 		}
 
+		# Return value
 		_ccode $handle ""
 		if {$rtype != "void"} {
 			_ccode $handle "    return(rv);"
