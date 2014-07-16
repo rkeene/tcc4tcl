@@ -153,8 +153,15 @@ $handle proc callToTcl {Tcl_Interp* ip int a int b} int {
 	return $retval
 }
 $handle cwrap callToTcl {Tcl_Interp* ip int a int b} int
-puts [$handle code]
 $handle go
 if {[callToTcl 3 5] != 8} {
 	error "3 + 5 is 8, not [callToTcl 3 5]"
 }
+
+set handle [tcc4tcl::new]
+$handle proc callToTcl1 {} float {
+	return 0.1
+}
+$handle cwrap callToTcl1 {} float
+$handle go
+puts [callToTcl1]

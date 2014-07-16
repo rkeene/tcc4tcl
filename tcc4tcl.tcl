@@ -173,7 +173,11 @@ namespace eval tcc4tcl {
 			lappend args $var
 		}
 
-		set adefs_c [join $adefs_c {, }]
+		if {[llength $adefs_c] == 0} {
+			set adefs_c "void"
+		} else {
+			set adefs_c [join $adefs_c {, }]
+		}
 
 		# Determine how to return in failure
 		if {$rtype != "void"} {
