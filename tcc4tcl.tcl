@@ -128,6 +128,189 @@ namespace eval tcc4tcl {
 		unset $handle
 	}
 
+	proc _proc {handle cname adefs rtype body args} {
+		# Convert body into a C-style string
+		binary scan $body H* cbody
+		set cbody [regsub -all {..} $cbody {\\x&}]
+
+		# Parse optional arguments
+		foreach {argname argval} $args {
+			switch -- $argname {
+				"-error" {
+					set returnErrorValue $argval
+				}
+			}
+		}
+
+		# Argument definitions (in C style) initialization
+		set adefs_c [list]
+
+		# Names of all arguments initialization
+		set args [list]
+
+		# If we aren't creating a new interp, it must be the first argument
+		# If the definition of this proc already includes the interp
+		# argument, use it -- otherwise add one
+		if {[lindex $adefs 0] != "Tcl_Interp*"} {
+			set newInterp 1
+		} else {
+			set newInterp 0
+			set interp_name [lindex $adefs 1]
+		}
+
+		# Create the C-style argument definition
+		foreach {type var} $adefs {
+			lappend adefs_c [list $type $var]
+			set types($var) $type
+			lappend args $var
+		}
+
+		set adefs_c [join $adefs_c {, }]
+
+		# Determine how to return in failure
+		if {$rtype != "void"} {
+			if {[info exists returnErrorValue]} {
+				set return_failure "return(${returnErrorValue})"
+			} else {
+				switch -- $rtype {
+					int - long - Tcl_WideInt {
+						set return_failure "return(-1)"
+					}
+					ok {
+						set return_failure "return(TCL_ERROR)"
+					}
+					double - float {
+						set return_failure "return(NaN)"
+					}
+					default {
+						set return_failure "return(NULL)"
+					}
+				}
+			}
+		} else {
+			set return_failure "return"
+		}
+
+		# Define the C function
+		_ccode $handle "$rtype $cname\($adefs_c) \{"
+
+		## Define the Tcl return value checking variable
+		_ccode $handle "    int tclrv;"
+
+		## If the interpreters return value is relevant, create a variable to store it
+		if {$rtype != "ok" && $rtype != "void"} {
+			_ccode $handle "    Tcl_Obj *rv_interp;"
+		}
+
+		## If we are returning a value, declare a variable for that
+		if {$rtype != "void"} {
+			_ccode $handle "    $rtype rv;"
+		}
+
+		## If we need to create a new interpreter, do so
+		if {$newInterp} {
+			set interp_name "ip"
+			_ccode $handle "    Tcl_Interp *${interp_name};"
+
+			set args_nointerp $args
+		} else {
+			set args_nointerp [lrange $args 1 end]
+		}
+
+		# Declare Tcl_Obj variables
+		_ccode $handle "    Tcl_Obj *_[join $args_nointerp {, *_}];"
+
+		_ccode $handle ""
+
+		if {$newInterp} {
+			_ccode $handle "    ${interp_name}  = Tcl_CreateInterp();"
+			_ccode $handle "    if (!${interp_name}) $return_failure;"
+			_ccode $handle ""
+		}
+
+		# Process all arguments
+		foreach arg $args_nointerp {
+			set type $types($arg)
+			switch -- $type {
+				int - long - Tcl_WideInt - float - double {
+					switch -- $type {
+						float {
+							set convCmd Double
+						}
+						Tcl_WideInt {
+							set convCmd WideInt
+						}
+						default {
+							set convCmd [string totitle $type]
+						}
+					}
+
+					_ccode $handle "    _$arg = Tcl_New${convCmd}Obj($arg);"
+					_ccode $handle "    if (!_$arg) $return_failure;"
+				}
+				char* {
+					_ccode $handle "    _$arg = Tcl_NewStringObj($arg, -1);"
+				}
+				Tcl_Obj* {
+					_ccode $handle "    _$arg = $arg;"
+				}
+				default {
+					return -code error "Unknown type: $type"
+				}
+			}
+			_ccode $handle "    if (!Tcl_ObjSetVar2(${interp_name}, Tcl_NewStringObj(\"${arg}\", -1), NULL, _$arg, 0)) $return_failure;"
+		}
+
+		_ccode $handle ""
+		_ccode $handle "    tclrv = Tcl_Eval($interp_name, \"$cbody\");"
+		_ccode $handle "    if (tclrv != TCL_OK) $return_failure;"
+		_ccode $handle ""
+
+		if {$rtype != "ok" && $rtype != "void"} {
+			_ccode $handle "    rv_interp = Tcl_GetObjResult(${interp_name});"
+		}
+
+		switch -- $rtype {
+			void { }
+			ok {
+				_ccode $handle "    rv = 0;"
+			}
+			int {
+				_ccode $handle "    if (Tcl_GetIntFromObj(ip, rv_interp, &rv) != TCL_OK) $return_failure;"
+			}
+			long {
+				_ccode $handle "    if (Tcl_GetLongFromObj(ip, rv_interp, &rv) != TCL_OK) $return_failure;"
+			}
+			Tcl_WideInt {
+				_ccode $handle "    if (Tcl_GetWideIntFromObj(ip, rv_interp, &rv) != TCL_OK) $return_failure;"
+			}
+			float {
+				_ccode $handle "    {"
+				_ccode $handle "        double t;"
+				_ccode $handle "        if (Tcl_GetDoubleFromObj(ip, rv_interp, &t) != TCL_OK) $return_failure;"
+				_ccode $handle "        rv = (float) t;"
+				_ccode $handle "    }"
+			}
+			double {
+				_ccode $handle "    if (Tcl_GetDoubleFromObj(ip, rv_interp, &rv) != TCL_OK) $return_failure;"
+			}
+			char* {
+				_ccode $handle "    rv = Tcl_GetString(rv_interp);"
+			}
+			char* {
+				_ccode $handle "    rv = Tcl_GetString(rv_interp);"
+			}
+		}
+
+		_ccode $handle ""
+		if {$rtype != "void"} {
+			_ccode $handle "    return(rv);"
+		} else {
+			_ccode $handle "    return;"
+		}
+		_ccode $handle "\}"
+	}
+
 	proc _go {handle {outputOnly 0}} {
 		variable dir
 

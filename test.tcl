@@ -145,3 +145,15 @@ if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)]} {
     
 	curl_fetch http://rkeene.org/
 }
+
+set handle [tcc4tcl::new]
+$handle proc callToTcl {int a int b} int {
+	set retval [expr {$a + $b}]
+
+	return $retval
+}
+$handle cwrap callToTcl {int a int b} int
+$handle go
+if {[callToTcl 3 5] != 8} {
+	error "3 + 5 is 8"
+}
