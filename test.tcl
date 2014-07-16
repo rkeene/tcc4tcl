@@ -108,7 +108,7 @@ if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)] && $::tcl_platform(os) != "Darw
 	$handle add_library_path /usr/lib64
 	$handle add_library_path /usr/lib
 	$handle add_library_path /usr/lib32
-	$handle add_library tclstub8.5
+	$handle add_library tclstub${::tcl_version}
 	$handle go
 	load $tmpfile myPkg
 	puts [ext_add 1 42]
