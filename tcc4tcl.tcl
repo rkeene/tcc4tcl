@@ -148,9 +148,9 @@ namespace eval tcc4tcl {
 		# Names of all arguments initialization
 		set args [list]
 
-		# If we aren't creating a new interp, it must be the first argument
-		# If the definition of this proc already includes the interp
-		# argument, use it -- otherwise add one
+		# Determine if one of the arguments is a Tcl_Interp*, if not
+		# then we will need to create our own Tcl interpreter for
+		# local use
 		set newInterp 1
 		foreach {type var} $adefs {
 			if {$type == "Tcl_Interp*"} {
@@ -163,13 +163,18 @@ namespace eval tcc4tcl {
 
 		# Create the C-style argument definition
 		foreach {type var} $adefs {
+			# Update definition of types
 			lappend adefs_c [list $type $var]
+
+			# Note the type for this variable
 			set types($var) $type
 
+			# The Tcl interpreter is not added to the list of Tcl arguments
 			if {$type == "Tcl_Interp*"} {
 				continue
 			}
 
+			# Update the list of arguments to pass to Tcl
 			lappend args $var
 		}
 
