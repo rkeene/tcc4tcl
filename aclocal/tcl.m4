@@ -29,10 +29,10 @@ AC_DEFUN([TCLEXT_FIND_TCLCONFIG], [
 	                 "$TCLCONFIGPATH/../bin/tclsh8.6" \
 	                 "$TCLCONFIGPATH/../bin/tclsh8.5" \
 	                 "$TCLCONFIGPATH/../bin/tclsh8.4" \
-	                 `which tclsh` \
-	                 `which tclsh8.6` \
-	                 `which tclsh8.5` \
-	                 `which tclsh8.4` \
+	                 `which tclsh 2>/dev/null` \
+	                 `which tclsh8.6 2>/dev/null` \
+	                 `which tclsh8.5 2>/dev/null` \
+	                 `which tclsh8.4 2>/dev/null` \
 	                 tclsh; do
 		if test -x "$try_tclsh"; then
 			break
