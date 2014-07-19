@@ -162,6 +162,7 @@ namespace eval tcc4tcl {
 		}
 
 		# Create the C-style argument definition
+		## Create a list of all arguments
 		foreach {type var} $adefs {
 			# Update definition of types
 			lappend adefs_c [list $type $var]
@@ -178,6 +179,7 @@ namespace eval tcc4tcl {
 			lappend args $var
 		}
 
+		## Convert that list into something we can use in a C prototype
 		if {[llength $adefs_c] == 0} {
 			set adefs_c "void"
 		} else {
@@ -294,6 +296,7 @@ namespace eval tcc4tcl {
 				}
 			}
 
+			# If we don't have a procedure to call, set the variables locally
 			if {$procname == ""} {
 				_ccode $handle "    if (!Tcl_ObjSetVar2(${interp_name}, Tcl_NewStringObj(\"${arg}\", -1), NULL, _$arg, 0)) $return_failure;"
 			}
