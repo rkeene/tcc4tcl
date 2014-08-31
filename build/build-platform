@@ -24,15 +24,25 @@ for dir in work/libtclkit-*/ __fail__; do
 	fi
 
 	dir="$(echo "${dir}" | sed 's@/$@@')"
-	dir_platform="$(basename "${dir}-" | sed 's@^libtclkit-[^-]*-@@;s@-notk-@-@g;s@-xcompile-@-@g;s@-kitdll-@-@;s@-sdk-@-@g;s@-$@@')"
+	dir_platform_in="$(basename "${dir}-" | sed 's@^libtclkit-[^-]*-@@;s@-notk-@-@g;s@-xcompile-@-@g;s@-kitdll-@-@;s@-sdk-@-@g;s@-$@@')"
+	case "${dir_platform_in}" in
+		linux-i386|linux-amd64)
+			dir_platforms=("${dir_platform_in}" "${dir_platform_in}-static")
+			;;
+		*)
+			dir_platforms=("${dir_platform_in}")
+			;;
+	esac
 
-	if [ -z "${platform}" ]; then
-		echo "  $dir_platform"
-	else
-		if [ "${dir_platform}" = "${platform}" ]; then
-			break
+	for dir_platform in "${dir_platforms[@]}"; do
+		if [ -z "${platform}" ]; then
+			echo "  $dir_platform"
+		else
+			if [ "${dir_platform}" = "${platform}" ]; then
+				break 2
+			fi
 		fi
-	fi
+	done
 done
 dir="$(pwd)/${dir}"
 
@@ -42,6 +52,15 @@ case "${platform}" in
 		;;
 	linux-i386)
 		platform="x86_64-redhat5-linux 32"
+		;;
+	linux-i386-static)
+		platform="x86_64-unknown-linux-musl 32"
+		;;
+	linux-amd64)
+		platform="x86_64-redhat5-linux 64"
+		;;
+	linux-amd64-static)
+		platform="x86_64-unknown-linux-musl 64"
 		;;
 	linux-mipsel)
 		platform="mipsel-unknown-linux-uclibc"
@@ -109,7 +128,7 @@ case "${platform}" in
 		make TCLSH="wine64 ${dir}/lib/tclsh.exe" test
 		;;
 	x86_64-redhat5-linux)
-		make TCLSH="${dir}/lib/tclsh" test
+		make TCLSH="LD_LIBRARY_PATH=${dir}/lib ${dir}/lib/tclsh" test
 		;;
 	'')
 		make test

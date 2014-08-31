@@ -23,3 +23,10 @@ autoconf
 automake -fca
 
 rm -rf autom4te.cache
+
+# Add Linux/MUSL support if missing
+if ! grep '[-]musl' config.sub >/dev/null 2>/dev/null; then
+	sed 's@\(-*\)linux-gnu\* @\1linux-musl | &@g' config.sub > config.sub.new
+	cat config.sub.new > config.sub
+	rm -f config.sub.new
+fi
