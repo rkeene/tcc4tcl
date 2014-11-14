@@ -32,7 +32,7 @@ static void Tcc4tclErrorFunc(Tcl_Interp * interp, char * msg) {
 	Tcl_AppendResult(interp, msg, "\n", NULL);
 }
 
-static void Tcc4tclCCommandDeleteProc (ClientData cdata) {
+static void Tcc4tclCCommandDeleteProc(ClientData cdata) {
 	struct TclTCCState *ts;
 	TCCState *s ;
 
@@ -42,6 +42,18 @@ static void Tcc4tclCCommandDeleteProc (ClientData cdata) {
 	ts->s = NULL;
 
 	ckfree((void *) ts);
+}
+
+static void Tcc4tclDeleteClientData(ClientData cdata) {
+	/*
+	 * ClientData is a Tcl_Obj*, that was passed in 
+	 * at command creation
+	 */
+	Tcl_Obj *cdata_o = (Tcl_Obj *)cdata;
+
+	if (cdata_o != NULL) {
+		Tcl_DecrRefCount(cdata_o);
+	}
 }
 
 static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tcl_Obj * CONST objv[]){
@@ -136,10 +148,11 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
             tcc_add_symbol(s,Tcl_GetString(objv[2]), val_p); 
             return TCL_OK; 
         case TCC4TCL_COMMAND:
-            if (objc != 4) {
-                Tcl_WrongNumArgs(interp, 2, objv, "tclname cname");
+            if (objc != 4 && objc != 5) {
+                Tcl_WrongNumArgs(interp, 2, objv, "tclname cname ?clientData?");
                 return TCL_ERROR;
             }
+
             if (!ts->relocated) {     
                 if(tcc_relocate(s, TCC_RELOCATE_AUTO)!=0) {
                     Tcl_AppendResult(interp, "relocating failed", NULL);
@@ -155,8 +168,16 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
 		    return TCL_ERROR;
 	    }
 
+	    /* the ClientData */
+	    if (objc == 5) {
+		val_o = objv[4];
+		Tcl_IncrRefCount(val_o);
+	    } else {
+		val_o = NULL;
+	    }
+
             /*printf("symbol: %x\n",val); */
-            Tcl_CreateObjCommand(interp,Tcl_GetString(objv[2]),val_p,NULL,NULL);
+            Tcl_CreateObjCommand(interp, Tcl_GetString(objv[2]), val_p, val_o, Tcc4tclDeleteClientData);
             return TCL_OK;
         case TCC4TCL_COMPILE:
             if(ts->relocated == 1) {

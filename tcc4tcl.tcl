@@ -57,10 +57,14 @@ namespace eval tcc4tcl {
 		return $handle
 	}
 
-	proc _linktclcommand {handle cSymbol tclCommand} {
+	proc _linktclcommand {handle cSymbol args} {
 		upvar #0 $handle state
+		set argc [llength $args]
+		if {$argc != 1 && $argc != 2} {
+			return -code error "_linktclcommand handle cSymbol tclCommand ?clientData?"
+		}
 
-		lappend state(procs) $cSymbol $tclCommand
+		lappend state(procs) $cSymbol $args
 	}
 
 	proc _add_include_path {handle args} {
@@ -93,7 +97,7 @@ namespace eval tcc4tcl {
 		append state(code) $wrapped "\n"
 		append state(code) $wrapper "\n"
 
-		lappend state(procs) $name $tclname
+		lappend state(procs) $name [list $tclname]
 	}
 
 	proc _cproc {handle name adefs rtype {body "#"}} {
@@ -108,7 +112,7 @@ namespace eval tcc4tcl {
 		append state(code) $wrapped "\n"
 		append state(code) $wrapper "\n"
 
-		lappend state(procs) $name $tclname
+		lappend state(procs) $name [list $tclname]
 	}
 
 	proc _ccode {handle code} {
@@ -406,8 +410,16 @@ namespace eval tcc4tcl {
 				# No additional code needed
 				if {$outputOnly} {
 					if {[info exists state(procs)] && [llength $state(procs)] > 0} {
-						foreach {procname cname} $state(procs) {
-							append code "/* Immediate: Tcl_CreateObjCommand(interp, \"$procname\", $cname, NULL, NULL); */\n"
+						foreach {procname cname_obj} $state(procs) {
+							set cname [lindex $cname_obj 0]
+
+							if {[llength $cname_obj] > 1} {
+								set obj [lindex $cname_obj 1]
+							} else {
+								set obj "NULL"
+							}
+
+							append code "/* Immediate: Tcl_CreateObjCommand(interp, \"$procname\", $cname, $obj, Tcc4tclDeleteClientData); */\n"
 						}
 					}
 				}
@@ -416,7 +428,13 @@ namespace eval tcc4tcl {
 				if {[info exists state(procs)] && [llength $state(procs)] > 0} {
 					append code "int _initProcs(Tcl_Interp *interp) \{\n"
 					
-					foreach {procname cname} $state(procs) {
+					foreach {procname cname_obj} $state(procs) {
+						set cname [lindex $cname_obj 0]
+
+						if {[llength $cname_obj] != 1} {
+							error "ClientData not supported in exe / dll mode"
+						}
+
 						append code "  Tcl_CreateObjCommand(interp, \"$procname\", $cname, NULL, NULL);\n"
 					}
 
@@ -438,7 +456,13 @@ namespace eval tcc4tcl {
 				append code "#endif\n"
 
 				if {[info exists state(procs)] && [llength $state(procs)] > 0} {
-					foreach {procname cname} $state(procs) {
+					foreach {procname cname_obj} $state(procs) {
+						set cname [lindex $cname_obj 0]
+
+						if {[llength $cname_obj] != 1} {
+							error "ClientData not supported in exe / dll mode"
+						}
+
 						append code "  Tcl_CreateObjCommand(interp, \"$procname\", $cname, NULL, NULL);\n"
 					}
 				}
@@ -486,8 +510,8 @@ namespace eval tcc4tcl {
 				tcc compile $code
 
 				if {[info exists state(procs)] && [llength $state(procs)] > 0} {
-					foreach {procname cname} $state(procs) {
-						tcc command $procname $cname
+					foreach {procname cname_obj} $state(procs) {
+						tcc command $procname {*}$cname_obj
 					}
 				}
 			}
