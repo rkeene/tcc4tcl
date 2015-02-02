@@ -169,3 +169,31 @@ AC_DEFUN([DC_CHK_OS_INFO], [
 		esac
 	fi
 ])
+
+AC_DEFUN(SHOBJ_SET_SONAME, [
+	SAVE_LDFLAGS="$LDFLAGS"
+
+	AC_MSG_CHECKING([how to specify soname])
+
+	for try in "-Wl,--soname,$1" "Wl,-install_name,$1" '__fail__'; do
+		LDFLAGS="$SAVE_LDFLAGS"
+
+		if test "${try}" = '__fail__'; then
+			AC_MSG_RESULT([can't])
+
+			break
+		fi
+
+		LDFLAGS="${LDFLAGS} ${try}"
+		AC_TRY_LINK([void TestTest(void) { return; }], [], [
+			LDFLAGS="${SAVE_LDFLAGS}"
+			SHOBJLDFLAGS="${SHOBJLDFLAGS} ${try}"
+
+			AC_MSG_RESULT([$try])
+
+			break
+		])
+	done
+
+	AC_SUBST(SHOBJLDFLAGS)
+])

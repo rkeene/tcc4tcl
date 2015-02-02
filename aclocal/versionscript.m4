@@ -36,13 +36,17 @@ AC_DEFUN([DC_SETVERSIONSCRIPT], [
 	rm -f "${TMPSYMFILE}"
 	rm -f "${TMPVERSIONSCRIPT}"
 
+	LDFLAGS="${SAVE_LDFLAGS}"
+
 	if test -n "${addldflags}"; then
-		LDFLAGS="${SAVE_LDFLAGS} ${addldflags}"
+		SHOBJLDFLAGS="${SHOBJLDFLAGS} ${addldflags}"
+
 		AC_MSG_RESULT($addldflags)
 	else
-		LDFLAGS="${SAVE_LDFLAGS}"
 		AC_MSG_RESULT([don't know])
 	fi
+
+	AC_SUBST(SHOBJLDFLAGS)
 ])
 
 AC_DEFUN([DC_FIND_STRIP_AND_REMOVESYMS], [
