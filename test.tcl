@@ -83,6 +83,7 @@ if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)]} {
 	set handle [tcc4tcl::new]
 	$handle cwrap curl_version {} vstring
 	$handle add_library_path [::tcl::pkgconfig get libdir,runtime]
+	$handle add_library_path /usr/lib/x86_64-linux-gnu
 	$handle add_library_path /usr/lib64
 	$handle add_library_path /usr/lib
 	$handle add_library_path /usr/lib32
@@ -107,6 +108,7 @@ if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)] && $::tcl_platform(os) != "Darw
 	set handle [tcc4tcl::new $tmpfile "myPkg 0.1"]
 	$handle cproc ext_add {int a int b} long { return(a+b); }
 	$handle add_library_path [::tcl::pkgconfig get libdir,runtime]
+	$handle add_library_path /usr/lib/x86_64-linux-gnu
 	$handle add_library_path /usr/lib64
 	$handle add_library_path /usr/lib
 	$handle add_library_path /usr/lib32
@@ -140,6 +142,7 @@ if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)]} {
 	}
 	$handle add_include_path /usr/include
 	$handle add_library_path [::tcl::pkgconfig get libdir,runtime]
+	$handle add_library_path /usr/lib/x86_64-linux-gnu
 	$handle add_library_path /usr/lib64
 	$handle add_library_path /usr/lib
 	$handle add_library_path /usr/lib32
