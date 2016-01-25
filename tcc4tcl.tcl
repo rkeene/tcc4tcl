@@ -590,13 +590,27 @@ proc ::tcc4tcl::wrap {name adefs rtype {body "#"} {cname ""} {includePrototype 0
 	set code {}
 
 	# Write wrapper
-	append cbody "int $wname\(ClientData dummy, Tcl_Interp *ip, int objc, Tcl_Obj *CONST objv\[\]) {" "\n"
+	append cbody "int $wname\(ClientData clientdata, Tcl_Interp *ip, int objc, Tcl_Obj *CONST objv\[\]) {" "\n"
 
 	# if first arg is "Tcl_Interp*", pass it without counting it as a cmd arg
-	if {[lindex $adefs 0] eq "Tcl_Interp*"} {
-		lappend cnames ip
-		lappend cargs [lrange $adefs 0 1]
-		set adefs [lrange $adefs 2 end]
+	while {1} {
+		if {[lindex $adefs 0] eq "Tcl_Interp*"} {
+			lappend cnames ip
+			lappend cargs [lrange $adefs 0 1]
+			set adefs [lrange $adefs 2 end]
+
+			continue
+		}
+
+		if {[lindex $adefs 0] eq "ClientData"} {
+			lappend cnames clientdata
+			lappend cargs [lrange $adefs 0 1]
+			set adefs [lrange $adefs 2 end]
+
+			continue
+		}
+
+		break
 	}
 
 	foreach {t n} $adefs {
@@ -641,6 +655,7 @@ proc ::tcc4tcl::wrap {name adefs rtype {body "#"} {cname ""} {includePrototype 0
 	# Create wrapper function
 	## Supported input types
 	##   Tcl_Interp*
+	##   ClientData
 	##   int
 	##   long
 	##   float
