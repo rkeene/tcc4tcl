@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
 headers_dir="$1"
 
