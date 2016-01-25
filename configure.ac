@@ -1,6 +1,9 @@
 dnl Define ourselves
 AC_INIT(tcc4tcl, @@VERS@@)
 
+dnl Default prefix should be "UNSPECIFIED" to use magic in the Makefile
+ac_default_prefix="UNSPECIFIED"
+
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_CPP
