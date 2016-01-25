@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
 cd "$(dirname "$(which "$0")")/.." || exit 1
 
