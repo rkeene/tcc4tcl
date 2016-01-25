@@ -107,6 +107,7 @@ if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)] && $::tcl_platform(os) != "Darw
 	file delete $tmpfile
 	set handle [tcc4tcl::new $tmpfile "myPkg 0.1"]
 	$handle cproc ext_add {int a int b} long { return(a+b); }
+	$handle add_include_path [::tcl::pkgconfig get includedir,runtime]
 	$handle add_library_path [::tcl::pkgconfig get libdir,runtime]
 	$handle add_library_path /usr/lib/x86_64-linux-gnu
 	$handle add_library_path /usr/lib64
@@ -182,3 +183,28 @@ $handle cproc callToTclBinaryWrapper {} void {
 puts [$handle code]
 $handle go
 callToTclBinaryWrapper
+
+set handle [tcc4tcl::new]
+$handle cproc testClientData {int y} {int} [concat "int x = 3;" {
+	return(x + y);
+}]
+$handle go
+set testVal [testClientData 1]
+if {$testVal != "4"} {
+	error "\[ClientData\] Invalid value: $testVal, should have been 4"
+}
+
+set handle [tcc4tcl::new]
+$handle cproc testClientData {ClientData _x=3 int y} {int} {
+	int x
+
+	Tcl_GetIntFromObj(NULL, _x, &x);
+
+	return(x + y);
+}
+set testVal [testClientData 1]
+if {$testVal != "4"} {
+	error "\[ClientData\] Invalid value: $testVal, should have been 4"
+}
+
+exit 0
