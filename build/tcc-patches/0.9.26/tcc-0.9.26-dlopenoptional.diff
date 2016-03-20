@@ -1,3 +1,17 @@
+diff -uNr tcc-0.9.26.orig/libtcc.c tcc-0.9.26-1dlopenoptional/libtcc.c
+--- tcc-0.9.26.orig/libtcc.c	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-1dlopenoptional/libtcc.c	2016-03-20 02:48:46.246782000 -0500
+@@ -114,8 +114,8 @@
+ }
+ #endif
+ 
+-#ifndef CONFIG_TCC_STATIC
+-void dlclose(void *p)
++#if !defined(CONFIG_TCC_STATIC) || (defined(CONFIG_TCC_STATIC) && defined(CONFIG_TCC_STATIC_NODLOPEN))
++static void dlclose(void *p)
+ {
+     FreeLibrary((HMODULE)p);
+ }
 diff -uNr tcc-0.9.26.orig/tccrun.c tcc-0.9.26-1dlopenoptional/tccrun.c
 --- tcc-0.9.26.orig/tccrun.c	2013-02-15 08:24:00.000000000 -0600
 +++ tcc-0.9.26-1dlopenoptional/tccrun.c	2014-05-21 23:33:35.056517000 -0500
