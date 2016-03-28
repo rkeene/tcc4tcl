@@ -48,7 +48,7 @@ namespace eval tcc4tcl {
 			set callcmd ::tcc4tcl::_$cmd
 
 			if {[info command $callcmd] == ""} {
-				return -code error "unknown or ambiguous subcommand \"$cmd\": must be cproc, linktclcommand, code, tk, or go"
+				return -code error "unknown or ambiguous subcommand \"$cmd\": must be cwrap, ccode, cproc, delete, linktclcommand, code, tk, add_include_path, add_library_path, add_library, or go"
 			}
 
 			uplevel 1 [list $callcmd $handle {*}$args]
