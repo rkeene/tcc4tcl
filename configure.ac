@@ -30,11 +30,6 @@ dnl Configure TCC build options
 AC_SUBST(TCC_CONFIGURE_OPTS)
 TCC_CONFIGURE_OPTS=""
 
-dnl -- If cross-compiling, specify a "--cross-prefix" and define the CPU
-if test "${host}" != "${build}"; then
-	TCC_CONFIGURE_OPTS="${TCC_CONFIGURE_OPTS} --cross-prefix=${host_alias}- --cpu=${host_cpu} --os=${host_os}"
-fi
-
 if test "${TCC4TCL_TARGET}" = "shared"; then
 	dnl Determine how to make shared objects
 	DC_GET_SHOBJFLAGS
@@ -52,6 +47,19 @@ fi
 AC_SUBST(TARGET)
 AC_SUBST(TCC4TCL_TARGET)
 AC_SUBST(TCC_EXTRA_CFLAGS)
+
+dnl -- If cross-compiling, specify a "--cross-prefix" and define the CPU
+if test "${host}" != "${build}"; then
+	cross_prefix="`echo "${AR}" | sed 's@ .*$@@;s@-ar$@@'`"
+	if test -z "${cross_prefix}"; then
+		cross_prefix="`echo "${CC}" | sed 's@ .*$@@;s@-[[^-]]*$@@'`"
+	fi
+	if test -z "${cross_prefix}"; then
+		cross_prefix="${host_alias}"
+	fi
+
+	TCC_CONFIGURE_OPTS="${TCC_CONFIGURE_OPTS} --cross-prefix=${cross_prefix}- --cpu=${host_cpu} --os=${host_os}"
+fi
 
 no_dlopen='0'
 AC_ARG_WITH([dlopen], AS_HELP_STRING([--without-dlopen], [do not define dlopen/dlclose/dlerror]), [
