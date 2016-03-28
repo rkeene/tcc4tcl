@@ -41,7 +41,7 @@ tcc_sha1='7110354d3637d0e05f43a006364c897248aed5d0'
 
 	## Apply patches
 	for patchfile in ../build/tcc-patches/${tcc_version}/*.diff; do
-		( cd * && patch -p1 ) < "${patchfile}"
+		( cd * && patch --no-backup-if-mismatch -p1 ) < "${patchfile}"
 	done
 
 	rm -rf ../tcc
