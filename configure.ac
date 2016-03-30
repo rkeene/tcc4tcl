@@ -50,9 +50,9 @@ AC_SUBST(TCC_EXTRA_CFLAGS)
 
 dnl -- If cross-compiling, specify a "--cross-prefix" and define the CPU
 if test "${host}" != "${build}"; then
-	cross_prefix="`echo "${AR}" | sed 's@ .*$@@;s@-ar$@@'`"
+	cross_prefix="`echo "${AR}" | sed 's@ .*$@@;s@^ar$@@;s@-ar$@@'`"
 	if test -z "${cross_prefix}"; then
-		cross_prefix="`echo "${CC}" | sed 's@ .*$@@;s@-[[^-]]*$@@'`"
+		cross_prefix="`echo "${CC}" | sed 's@ .*$@@;s@^[[^-]]*$@@;s@-[[^-]]*$@@'`"
 	fi
 	if test -z "${cross_prefix}"; then
 		cross_prefix="${host_alias}"
