@@ -84,7 +84,7 @@ AC_CACHE_CHECK([if compiler supports -Wno-unused-result], [tcc4tcl_cv_compiler_w
 if test "$tcc4tcl_cv_compiler_wno_unused_result" = 'yes'; then
 	TCC_WNO_UNUSED_RESULT='-Wno-unused-result'
 else
-	TCC_WNO_UNUSED_RESULT='-Wno-unused-result'
+	TCC_WNO_UNUSED_RESULT=''
 fi
 AC_SUBST(TCC_WNO_UNUSED_RESULT)
 
