@@ -44,8 +44,11 @@ tcc_sha1='7110354d3637d0e05f43a006364c897248aed5d0'
 		( cd * && patch --no-backup-if-mismatch -p1 ) < "${patchfile}"
 	done
 
+	## Rename "Makefile" to "Makefile.in" so configure processes it
+	( cd * && mv Makefile Makefile.in ) || exit 1
+
 	rm -rf ../tcc
 	mkdir ../tcc || exit 1
 	mv */* ../tcc/
-)
+) || exit 1
 rm -rf __TMP__

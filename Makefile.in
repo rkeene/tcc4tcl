@@ -113,7 +113,7 @@ distclean: clean
 	rm -rf autom4te.cache
 	rm -f config.log config.status
 	rm -f pkgIndex.tcl tcc4tcl.syms
-	rm -f Makefile
+	rm -f Makefile tcc/Makefile
 
 mrproper: distclean
 	rm -rf tcc

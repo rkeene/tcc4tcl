@@ -69,6 +69,25 @@ if test "$no_dlopen" = '1'; then
 	CPPFLAGS="${CPPFLAGS} -DCONFIG_TCC_STATIC_NODLOPEN=1"
 fi
 
+dnl Determine if the compiler supports -Wno-unused-result
+AC_CACHE_CHECK([if compiler supports -Wno-unused-result], [tcc4tcl_cv_compiler_wno_unused_result], [
+	SAVE_CFLAGS="${CFLAGS}"
+	CFLAGS="${SAVE_CFLAGS} -Wno-unused-result"
+	AC_COMPILE_IFELSE([AC_LANG_SOURCE()], [
+		tcc4tcl_cv_compiler_wno_unused_result='yes'
+	], [
+		tcc4tcl_cv_compiler_wno_unused_result='no'
+	])
+	CFLAGS="${SAVE_CFLAGS}"
+])
+
+if test "$tcc4tcl_cv_compiler_wno_unused_result" = 'yes'; then
+	TCC_WNO_UNUSED_RESULT='-Wno-unused-result'
+else
+	TCC_WNO_UNUSED_RESULT='-Wno-unused-result'
+fi
+AC_SUBST(TCC_WNO_UNUSED_RESULT)
+
 dnl Determine HOST_PATH_SEPERATOR
 case $host_os in
 	*mingw*)
@@ -89,4 +108,4 @@ if test "${TCC4TCL_TARGET}" = "shared"; then
 fi
 
 dnl Produce output
-AC_OUTPUT(Makefile pkgIndex.tcl tcc4tcl.syms)
+AC_OUTPUT(Makefile pkgIndex.tcl tcc4tcl.syms tcc/Makefile)

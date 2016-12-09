@@ -1,0 +1,12 @@
+diff -uNr tcc-0.9.26.orig/Makefile tcc-0.9.26-fixmakefile/Makefile
+--- tcc-0.9.26.orig/Makefile	2013-02-15 08:24:00.000000000 -0600
++++ tcc-0.9.26-fixmakefile/Makefile	2016-12-08 23:20:32.856086001 -0600
+@@ -16,7 +16,7 @@
+ ifeq (-$(GCC_MAJOR)-$(findstring $(GCC_MINOR),56789)-,-4--)
+ CFLAGS+=-D_FORTIFY_SOURCE=0
+ else
+-CFLAGS+=-Wno-unused-result
++CFLAGS+=@TCC_WNO_UNUSED_RESULT@
+ endif
+ endif
+ endif
