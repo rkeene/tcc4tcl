@@ -8,7 +8,7 @@
 	for file in shobj.m4 tcl.m4 versionscript.m4; do
 		rm -f "${file}"
 
-		wget -O "${file}.new" "http://rkeene.org/devel/autoconf/${file}" || continue
+		wget -O "${file}.new" "http://chiselapp.com/user/rkeene/repository/autoconf/doc/trunk/${file}" || continue
 
 		mv "${file}.new" "${file}"
 	done

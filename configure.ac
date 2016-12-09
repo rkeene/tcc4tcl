@@ -15,16 +15,11 @@ AC_LANG(C)
 dnl Determine system information
 DC_CHK_OS_INFO
 
+dnl Perform Tcl Extension required stuff
+TCLEXT_INIT
+
 dnl Determine if a shared or static build is requested
-AC_ARG_ENABLE([shared], AS_HELP_STRING([--disable-shared], [build static library instead of shared library]), [
-	if test "$enableval" = "no"; then
-		TCC4TCL_TARGET=static
-	else
-		TCC4TCL_TARGET=shared
-	fi
-], [
-	TCC4TCL_TARGET=shared
-])
+TCC4TCL_TARGET="${TCLEXT_BUILD}"
 
 dnl Configure TCC build options
 AC_SUBST(TCC_CONFIGURE_OPTS)
@@ -87,9 +82,6 @@ AC_SUBST(HOST_PATH_SEPARATOR)
 
 dnl Find a suitable awk
 AC_CHECK_TOOLS(AWK, gawk awk, [false])
-
-dnl Perform Tcl Extension required stuff
-TCLEXT_INIT
 
 dnl This must be done last since it breaks the compilation
 if test "${TCC4TCL_TARGET}" = "shared"; then

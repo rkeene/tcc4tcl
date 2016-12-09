@@ -81,32 +81,56 @@ AC_DEFUN([DC_SYNC_SHLIBOBJS], [
 ])
 
 AC_DEFUN([DC_SYNC_RPATH], [
-  OLD_LDFLAGS="$LDFLAGS"
+	AC_ARG_ENABLE([rpath], AS_HELP_STRING([--disable-rpath], [disable setting of rpath]), [
+		if test "$enableval" = 'no'; then
+			set_rpath='no'
+		else
+			set_rpath='yes'
+		fi
+	], [
+		if test "$cross_compiling" = 'yes'; then
+			set_rpath='no'
+		else
+			ifelse($1, [], [
+				set_rpath='yes'
+			], [
+				set_rpath='$1'
+			])
+		fi
+	])
 
-  for tryrpath in "-Wl,-rpath" "-Wl,--rpath" "-Wl,-R"; do
-    LDFLAGS="$OLD_LDFLAGS $tryrpath -Wl,/tmp"
-    AC_LINK_IFELSE(AC_LANG_PROGRAM([], [ return(0); ]), [
-      rpathldflags="$tryrpath"
-      break
-    ])
-  done
-  unset tryrpath
+	if test "$set_rpath" = 'yes'; then
+		OLD_LDFLAGS="$LDFLAGS"
 
-  LDFLAGS="$OLD_LDFLAGS"
-  unset OLD_LDFLAGS
+		AC_CACHE_CHECK([how to set rpath], [rsk_cv_link_set_rpath], [
+			AC_LANG_PUSH(C)
+			for tryrpath in "-Wl,-rpath" "-Wl,--rpath" "-Wl,-R"; do
+				LDFLAGS="$OLD_LDFLAGS $tryrpath -Wl,/tmp"
+				AC_LINK_IFELSE([AC_LANG_PROGRAM([], [ return(0); ])], [
+					rsk_cv_link_set_rpath="$tryrpath"
+					break
+				])
+			done
+			AC_LANG_POP(C)
+			unset tryrpath
+		])
 
-  ADDLDFLAGS=""
-  for opt in $LDFLAGS; do
-    if echo "$opt" | grep '^-L' >/dev/null; then
-      rpathdir=`echo "$opt" | sed 's@^-L *@@'`
-      ADDLDFLAGS="$ADDLDFLAGS $rpathldflags -Wl,$rpathdir"
-    fi
-  done
-  unset opt rpathldflags
+		LDFLAGS="$OLD_LDFLAGS"
+		unset OLD_LDFLAGS
 
-  LDFLAGS="$LDFLAGS $ADDLDFLAGS"
+		ADDLDFLAGS=""
+		for opt in $LDFLAGS $LIBS; do
+			if echo "$opt" | grep '^-L' >/dev/null; then
+				rpathdir="`echo "$opt" | sed 's@^-L *@@'`"
+				ADDLDFLAGS="$ADDLDFLAGS $rsk_cv_link_set_rpath -Wl,$rpathdir"
+			fi
+		done
+		unset opt
 
-  unset ADDLDFLAGS
+		LDFLAGS="$LDFLAGS $ADDLDFLAGS"
+
+		unset ADDLDFLAGS
+	fi
 ])
 
 AC_DEFUN([DC_CHK_OS_INFO], [
@@ -142,11 +166,9 @@ AC_DEFUN([DC_CHK_OS_INFO], [
 						;;
 				esac
 				;;
-			aix[0-9].*)
-				SHOBJEXT="a"
-				;;
 			mingw32|mingw32msvc*)
 				SHOBJEXT="dll"
+				AREXT='lib'
 				CFLAGS="$CFLAGS -mms-bitfields"
 				CPPFLAGS="$CPPFLAGS -mms-bitfields"
 				SHOBJCPPFLAGS="-DPIC"
@@ -154,6 +176,7 @@ AC_DEFUN([DC_CHK_OS_INFO], [
 				;;
 			msvc)
 				SHOBJEXT="dll"
+				AREXT='lib'
 				CFLAGS="$CFLAGS -nologo"
 				SHOBJCPPFLAGS='-DPIC'
 				SHOBJLDFLAGS='/LD /LINK /NODEFAULTLIB:MSVCRT'
@@ -170,7 +193,7 @@ AC_DEFUN([DC_CHK_OS_INFO], [
 	fi
 ])
 
-AC_DEFUN(SHOBJ_SET_SONAME, [
+AC_DEFUN([SHOBJ_SET_SONAME], [
 	SAVE_LDFLAGS="$LDFLAGS"
 
 	AC_MSG_CHECKING([how to specify soname])
@@ -197,3 +220,81 @@ AC_DEFUN(SHOBJ_SET_SONAME, [
 
 	AC_SUBST(SHOBJLDFLAGS)
 ])
+
+dnl $1 = Description to show user
+dnl $2 = Libraries to link to
+dnl $3 = Variable to update (optional; default LIBS)
+dnl $4 = Action to run if found
+dnl $5 = Action to run if not found
+AC_DEFUN([SHOBJ_DO_STATIC_LINK_LIB], [
+        ifelse($3, [], [
+                define([VAR_TO_UPDATE], [LIBS])
+        ], [
+                define([VAR_TO_UPDATE], [$3])
+        ])  
+
+
+	AC_MSG_CHECKING([for how to statically link to $1])
+
+	trylink_ADD_LDFLAGS=''
+	for arg in $VAR_TO_UPDATE; do
+		case "${arg}" in
+			-L*)
+				trylink_ADD_LDFLAGS="${arg}"
+				;;
+		esac
+	done
+
+	SAVELIBS="$LIBS"
+	staticlib=""
+	found="0"
+	dnl HP/UX uses -Wl,-a,archive ... -Wl,-a,shared_archive
+	dnl Linux and Solaris us -Wl,-Bstatic ... -Wl,-Bdynamic
+	AC_LANG_PUSH([C])
+	for trylink in "-Wl,-a,archive $2 -Wl,-a,shared_archive" "-Wl,-Bstatic $2 -Wl,-Bdynamic" "$2"; do
+		if echo " ${LDFLAGS} " | grep ' -static ' >/dev/null; then
+			if test "${trylink}" != "$2"; then
+				continue
+			fi
+		fi
+
+		LIBS="${SAVELIBS} ${trylink_ADD_LDFLAGS} ${trylink}"
+
+		AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])], [
+			staticlib="${trylink}"
+			found="1"
+
+			break
+		])
+	done
+	AC_LANG_POP([C])
+	LIBS="${SAVELIBS}"
+
+	if test "${found}" = "1"; then
+		new_RESULT=''
+		SAVERESULT="$VAR_TO_UPDATE"
+		for lib in ${SAVERESULT}; do
+			addlib='1'
+			for removelib in $2; do
+				if test "${lib}" = "${removelib}"; then
+					addlib='0'
+					break
+				fi
+			done
+
+			if test "$addlib" = '1'; then
+				new_RESULT="${new_RESULT} ${lib}"
+			fi
+		done
+		VAR_TO_UPDATE="${new_RESULT} ${staticlib}"
+
+		AC_MSG_RESULT([${staticlib}])
+
+		$4
+	else
+		AC_MSG_RESULT([cant])
+
+		$5
+	fi
+])
+
