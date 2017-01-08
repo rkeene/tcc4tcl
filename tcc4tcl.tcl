@@ -15,6 +15,19 @@ namespace eval tcc4tcl {
 
 	set count 0
 
+	proc lookupNamespace {name} {
+		if {![string match "::*" $name]} {
+			set nsfrom [uplevel 2 {namespace current}]    
+			if {$nsfrom eq "::"} {
+				set nsfrom ""
+			}
+
+			set name "${nsfrom}::${name}"
+		}
+
+		return $name
+	}
+
 	proc new {{output ""} {pkgName ""}} {
 		variable dir
 		variable count
@@ -48,7 +61,7 @@ namespace eval tcc4tcl {
 			set callcmd ::tcc4tcl::_$cmd
 
 			if {[info command $callcmd] == ""} {
-				return -code error "unknown or ambiguous subcommand \"$cmd\": must be cwrap, ccode, cproc, delete, linktclcommand, code, tk, add_include_path, add_library_path, add_library, or go"
+				return -code error "unknown or ambiguous subcommand \"$cmd\": must be cwrap, ccode, cproc, ccommand, delete, linktclcommand, code, tk, add_include_path, add_library_path, add_library, or go"
 			}
 
 			uplevel 1 [list $callcmd $handle {*}$args]
@@ -65,6 +78,23 @@ namespace eval tcc4tcl {
 		}
 
 		lappend state(procs) $cSymbol $args
+	}
+
+	proc _ccommand {handle tclCommand argList body} {
+		upvar #0 $handle state
+
+		set tclCommand [lookupNamespace $tclCommand]
+
+		set cSymbol [cleanname [namespace tail $tclCommand]]
+
+		lappend state(procs) $tclCommand [list $cSymbol]
+
+		foreach {clientData interp objc objv} $argList {}
+		set cArgList "ClientData $clientData, Tcl_Interp *$interp, int $objc, Tcl_Obj *CONST $objv\[\]"
+
+		append state(code) "int $cSymbol\($cArgList) {\n$body\n}\n"
+
+		return
 	}
 
 	proc _add_include_path {handle args} {
@@ -573,14 +603,7 @@ proc ::tcc4tcl::wrap {name adefs rtype {body "#"} {cname ""} {includePrototype 0
 	set wname tcl_[tcc4tcl::cleanname $name]
 
 	# Fully qualified proc name
-	if {![string match "::*" $name]} {
-		set nsfrom [uplevel 1 {namespace current}]    
-		if {$nsfrom eq "::"} {
-			set nsfrom ""
-		}
-
-		set name "${nsfrom}::${name}"
-	}
+	set name [lookupNamespace $name]
 
 	array set types {}
 	set varnames {}

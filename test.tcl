@@ -207,4 +207,15 @@ if {$testVal != "4"} {
 	error "\[ClientData\] Invalid value: $testVal, should have been 4"
 }
 
+set handle [tcc4tcl::new]
+$handle ccommand testCCommand {dummy ip objc objv} {
+	Tcl_SetObjResult(ip, Tcl_NewStringObj("OKAY", 4));
+
+	return(TCL_OK);
+}
+$handle go
+if {[testCCommand] ne "OKAY"} {
+	error "\[testCCommand\] Invalid result"
+}
+
 exit 0
