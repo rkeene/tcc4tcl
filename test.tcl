@@ -111,7 +111,7 @@ puts [wideTest 30]
 
 # Produce a loadable object
 ## Currently doesn't work on Darwin
-if {[info exists ::env(TCC4TCL_TEST_RUN_NATIVE)] && $::tcl_platform(os) != "Darwin"} {
+if {false && [info exists ::env(TCC4TCL_TEST_RUN_NATIVE)] && $::tcl_platform(os) != "Darwin"} {
 	set tmpfile "/tmp/DELETEME_tcc4tcl_test_exec[expr rand()].so"
 	file delete $tmpfile
 	set handle [tcc4tcl::new $tmpfile "myPkg 0.1"]
