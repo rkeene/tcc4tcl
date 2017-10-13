@@ -46,7 +46,7 @@ namespace eval tcc4tcl {
 			}
 		}
 
-		array set $handle [list code "" type $type filename $output package $pkgName add_inc_path "" add_lib_path "" add_lib ""]
+		array set $handle [list code "" type $type filename $output package $pkgName add_inc_path "" add_lib_path "" add_lib "" add_macros ""]
 
 		proc $handle {cmd args} [string map [list @@HANDLE@@ $handle] {
 			set handle {@@HANDLE@@}
@@ -63,7 +63,7 @@ namespace eval tcc4tcl {
 			set callcmd ::tcc4tcl::_$cmd
 
 			if {[info command $callcmd] == ""} {
-				return -code error "unknown or ambiguous subcommand \"$cmd\": must be cwrap, ccode, cproc, ccommand, delete, linktclcommand, code, tk, add_include_path, add_library_path, add_library, or go"
+				return -code error "unknown or ambiguous subcommand \"$cmd\": must be cwrap, ccode, cproc, ccommand, delete, linktclcommand, code, tk, add_include_path, add_library_path, add_library, process_command_line, or go"
 			}
 
 			uplevel 1 [list $callcmd $handle {*}$args]
@@ -157,6 +157,45 @@ namespace eval tcc4tcl {
 		upvar #0 $handle state
 
 		set state(tk) 1
+	}
+
+	proc _process_command_line {handle cmdStr} {
+		# XXX:TODO: This needs to handle shell-quoted arguments
+		upvar #0 $handle state
+		set cmdStr [regsub -all {   *} $cmdStr { }]
+		set work [split $cmdStr " "]
+
+		foreach arg $work {
+			switch -glob -- $arg {
+				"-I*" {
+					set dir [string range $cmd 2 end]
+					_add_include_path $handle $dir
+				}
+				"-D*" {
+					set symbolval [string range $cmd 2 end]
+					set symbolval [split $symbolval =]
+					set symbol [lindex $symbolval 0]
+					set val    [join [lrange $symbolval 1 end] =]
+
+					dict set state(add_macros) $symbol $val
+				}
+				"-U*" {
+					set symbol [string range $cmd 2 end]
+					dict unset state(add_macros) $symbol $val
+				}
+				"-l*" {
+					set library [string range $cmd 2 end]
+					_add_library $handle $library
+				}
+				"-L*" {
+					set libraryDir [string range $cmd 2 end]
+					_add_library_path $handle $libraryDir
+				}
+				"-g" {
+					# Ignored
+				}
+			}
+		}
 	}
 
 	proc _delete {handle} {
@@ -423,7 +462,13 @@ namespace eval tcc4tcl {
 
 		upvar #0 $handle state
 
-		set code $state(code)
+		set code ""
+
+		foreach {macroName macroVal} $state(add_macros) {
+			append code "#define [string trim "$macroName $macroVal"]\n"
+		}
+
+		append code $state(code) "\n"
 
 		if {$state(type) == "exe" || $state(type) == "dll"} {
 			if {[info exists state(procs)] && [llength $state(procs)] > 0} {
