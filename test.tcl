@@ -63,6 +63,15 @@ if {$err != "" || $v == 1} {
 }
 
 # New API
+## Test processing the commandline
+set handle [tcc4tcl::new]
+$handle process_command_line -Dx=1234
+$handle cproc test13 {int i} int {
+	return(i+x);
+}
+$handle go
+puts "[test13 1] = 1235"
+
 ## Simple test
 set handle [tcc4tcl::new]
 $handle cproc test5 {int i} int { return(i + 42); }

@@ -165,8 +165,8 @@ namespace eval tcc4tcl {
 		set cmdStr [regsub -all {   *} $cmdStr { }]
 		set work [split $cmdStr " "]
 
-		foreach arg $work {
-			switch -glob -- $arg {
+		foreach cmd $work {
+			switch -glob -- $cmd {
 				"-I*" {
 					set dir [string range $cmd 2 end]
 					_add_include_path $handle $dir
