@@ -227,4 +227,15 @@ if {[testCCommand] ne "OKAY"} {
 	error "\[testCCommand\] Invalid result"
 }
 
+# Critcl test
+package require -exact critcl 0
+critcl::ccode {
+#define test 1234
+}
+
+critcl::cproc test14 {int x} int {
+	return(x + test);
+}
+puts "Test14: [test14 3]"
+
 exit 0

@@ -60,13 +60,14 @@ tcc4tcl-static.a: tcc4tcl.o tcc/libtcc.a
 	-$(RANLIB) tcc4tcl-static.new.a
 	mv tcc4tcl-static.new.a tcc4tcl-static.a
 
-install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc4tcl.tcl tcc/libtcc1.a $(shell echo $(srcdir)/tcc/include/*) $(shell echo $(srcdir)/tcc/win32/lib/*.c) $(srcdir)/headers.awk $(srcdir)/patch-headers.sh
+install: $(TARGET) pkgIndex.tcl $(srcdir)/tcc4tcl.tcl $(srcdir)/tcc4critcl.tcl tcc/libtcc1.a $(shell echo $(srcdir)/tcc/include/*) $(shell echo $(srcdir)/tcc/win32/lib/*.c) $(srcdir)/headers.awk $(srcdir)/patch-headers.sh
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib"
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include"
 	$(INSTALL) -m 0755 $(TARGET) "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -m 0644 pkgIndex.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -m 0644 $(srcdir)/tcc4tcl.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
+	$(INSTALL) -m 0644 $(srcdir)/tcc4critcl.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -m 0644 tcc/libtcc1.a "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib"
 	$(INSTALL) -m 0644 $(shell echo $(srcdir)/tcc/win32/lib/*.c) "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/lib"
 	$(INSTALL) -m 0644 $(shell echo $(srcdir)/tcc/include/*) "$(DESTDIR)$(PACKAGE_INSTALL_DIR)/include"
@@ -91,7 +92,7 @@ test: test.tcl
 	rm -rf __TMP__
 	$(MAKE) install tcllibdir=$(shell pwd)/__TMP__
 	-if [ "$(PACKAGE_VERSION)" = '@@VERS@@' ]; then cd __TMP__/* && ( \
-		for file in tcc4tcl.tcl pkgIndex.tcl; do \
+		for file in tcc4tcl.tcl tcc4critcl.tcl pkgIndex.tcl; do \
 			sed 's/@@VERS@@/0.0/g' "$${file}" > "$${file}.new"; \
 			cat "$${file}.new" > "$${file}"; \
 			rm -f "$${file}.new"; \
