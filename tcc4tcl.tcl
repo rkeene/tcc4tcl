@@ -10,7 +10,9 @@ namespace eval tcc4tcl {
 		catch { load {} tcc4tcl }
 	}
 	if {[info command ::tcc4tcl] == ""} {
-		load [file join $dir tcc4tcl[info sharedlibextension]] tcc4tcl
+		catch {
+			load [file join $dir tcc4tcl[info sharedlibextension]] tcc4tcl
+		}
 	}
 
 	set count 0
