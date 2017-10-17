@@ -46,7 +46,7 @@ namespace eval tcc4tcl {
 			}
 		}
 
-		array set $handle [list code "" type $type filename $output package $pkgName add_inc_path "" add_lib_path "" add_lib "" add_macros ""]
+		array set $handle [list code "" type $type filename $output package $pkgName add_inc_path "" add_lib_path "" add_lib "" add_cmdline ""]
 
 		proc $handle {cmd args} [string map [list @@HANDLE@@ $handle] {
 			set handle {@@HANDLE@@}
@@ -159,43 +159,10 @@ namespace eval tcc4tcl {
 		set state(tk) 1
 	}
 
-	proc _process_command_line {handle cmdStr} {
-		# XXX:TODO: This needs to handle shell-quoted arguments
+	proc _process_command_line {handle args} {
 		upvar #0 $handle state
-		set cmdStr [regsub -all {   *} $cmdStr { }]
-		set work [split $cmdStr " "]
 
-		foreach cmd $work {
-			switch -glob -- $cmd {
-				"-I*" {
-					set dir [string range $cmd 2 end]
-					_add_include_path $handle $dir
-				}
-				"-D*" {
-					set symbolval [string range $cmd 2 end]
-					set symbolval [split $symbolval =]
-					set symbol [lindex $symbolval 0]
-					set val    [join [lrange $symbolval 1 end] =]
-
-					dict set state(add_macros) $symbol $val
-				}
-				"-U*" {
-					set symbol [string range $cmd 2 end]
-					dict unset state(add_macros) $symbol $val
-				}
-				"-l*" {
-					set library [string range $cmd 2 end]
-					_add_library $handle $library
-				}
-				"-L*" {
-					set libraryDir [string range $cmd 2 end]
-					_add_library_path $handle $libraryDir
-				}
-				"-g" {
-					# Ignored
-				}
-			}
-		}
+		lappend state(add_cmdline) {*}$args
 	}
 
 	proc _delete {handle} {
@@ -464,10 +431,6 @@ namespace eval tcc4tcl {
 
 		set code ""
 
-		foreach {macroName macroVal} $state(add_macros) {
-			append code "#define [string trim "$macroName $macroVal"]\n"
-		}
-
 		append code $state(code) "\n"
 
 		if {$state(type) == "exe" || $state(type) == "dll"} {
@@ -569,6 +532,10 @@ namespace eval tcc4tcl {
 		}
 
 		::tcc4tcl $dir $tcc_type tcc
+
+		if {$state(add_cmdline) ne ""} {
+			tcc parse_args {*}$state(add_cmdline)
+		}
 
 		foreach path $state(add_inc_path) {
 			tcc add_include_path $path

@@ -69,15 +69,19 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
 		"add_include_path", "add_file",  "add_library", 
 		"add_library_path", "add_symbol", "command", "compile",
 		"define", "get_symbol", "output_file", "undefine",
+		"parse_args",
 		(char *) NULL
 	};
 	enum options {
 		TCC4TCL_ADD_INCLUDE, TCC4TCL_ADD_FILE, TCC4TCL_ADD_LIBRARY, 
 		TCC4TCL_ADD_LIBRARY_PATH, TCC4TCL_ADD_SYMBOL, TCC4TCL_COMMAND, TCC4TCL_COMPILE,
-		TCC4TCL_DEFINE, TCC4TCL_GET_SYMBOL, TCC4TCL_OUTPUT_FILE, TCC4TCL_UNDEFINE
+		TCC4TCL_DEFINE, TCC4TCL_GET_SYMBOL, TCC4TCL_OUTPUT_FILE, TCC4TCL_UNDEFINE,
+		TCC4TCL_PARSE_ARGS
 	};
 	char *str;
 	int rv;
+	int tcc_argc;
+	char **tcc_argv;
 
 	ts = (struct TclTCCState *) cdata;
 	s = ts->s;
@@ -255,6 +259,22 @@ static int Tcc4tclHandleCmd ( ClientData cdata, Tcl_Interp *interp, int objc, Tc
             }
             tcc_undefine_symbol(s,Tcl_GetString(objv[2]));
             return TCL_OK;
+	case TCC4TCL_PARSE_ARGS:
+		if (objc < 3) {
+                	Tcl_WrongNumArgs(interp, 2, objv, "args...");
+	                return TCL_ERROR;
+		}
+
+		tcc_argc = objc - 2;
+		tcc_argv = (char **) ckalloc(sizeof(*tcc_argv) * (tcc_argc + 1));
+		for (index = 0; index < tcc_argc; index++) {
+			tcc_argv[index] = Tcl_GetString(objv[index + 2]);
+		}
+		tcc_argv[tcc_argc] = NULL;
+
+		tcc_parse_args(s, tcc_argc, tcc_argv);
+
+		return(TCL_OK);
         default:
             Tcl_Panic("internal error during option lookup");
     }

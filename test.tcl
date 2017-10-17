@@ -1,7 +1,7 @@
 #! /usr/bin/env tclsh
 
 lappend auto_path [lindex $argv 0]
-package require tcc4tcl
+package require -exact tcc4tcl 0.0
 
 tcc4tcl::cproc test {int i} int { return(i+42); }
 tcc4tcl::cproc test1 {int i} int { return(i+42); }
@@ -237,5 +237,28 @@ critcl::cproc test14 {int x} int {
 	return(x + test);
 }
 puts "Test14: [test14 3]"
+
+# Executable
+close [file tempfile exe]
+file delete -force -- $exe
+set handle [tcc4tcl::new $exe]
+$handle ccode {
+	#include <stdio.h>
+	int main(int argc, char **argv) {
+		printf("hi\n");
+		return(0);
+	}
+}
+$handle process_command_line -r
+$handle go
+set execCode [catch {
+	puts [exec ls -l $exe]
+	exec ld -o $exe.e $exe
+	puts [exec $exe.e]
+} err]
+file delete $exe
+if {$execCode} {
+	error $err
+}
 
 exit 0
