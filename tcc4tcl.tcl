@@ -46,7 +46,7 @@ namespace eval tcc4tcl {
 			}
 		}
 
-		array set $handle [list code "" type $type filename $output package $pkgName add_inc_path "" add_lib_path "" add_lib "" add_macros ""]
+		array set $handle [list code "" type $type filename $output package $pkgName add_inc_path "" add_lib_path "" add_lib "" add_macros "" add_files ""]
 
 		proc $handle {cmd args} [string map [list @@HANDLE@@ $handle] {
 			set handle {@@HANDLE@@}
@@ -115,6 +115,12 @@ namespace eval tcc4tcl {
 		upvar #0 $handle state
 
 		lappend state(add_lib) {*}$args
+	}
+
+	proc _add_file {handle args} {
+		upvar #0 $handle state
+
+		lappend state(add_files) {*}$args
 	}
 
 	proc _cwrap {handle name adefs rtype} {
@@ -580,6 +586,10 @@ namespace eval tcc4tcl {
 
 		foreach lib $state(add_lib) {
 			tcc add_library $lib
+		}
+
+		foreach addFile $state(add_files) {
+			tcc add_file $addFile
 		}
 
 		switch -- $state(type) {
