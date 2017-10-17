@@ -289,8 +289,9 @@ static int Tcc4tclCreateCmd( ClientData cdata, Tcl_Interp *interp, int objc, Tcl
 
 #ifdef USE_TCL_STUBS
 	if (index == TCC_OUTPUT_MEMORY) {
-		/* Only add this symbol if we are compiling to memory */
+		/* Only add these symbols if we are compiling to memory */
 		tcc_add_symbol(s, "tclStubsPtr", &tclStubsPtr);
+		tcc_add_symbol(s, "Tcl_InitStubs", &Tcl_InitStubs);
 	}
 
 	tcc_define_symbol(s, "USE_TCL_STUBS", "1");
