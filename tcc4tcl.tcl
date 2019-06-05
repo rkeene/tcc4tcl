@@ -88,6 +88,7 @@ namespace eval tcc4tcl {
 		set tclCommand [lookupNamespace $tclCommand]
 
 		set cSymbol [cleanname [namespace tail $tclCommand]]
+		set cSymbol [cleanname $tclCommand]
 
 		lappend state(procs) $tclCommand [list $cSymbol]
 
@@ -470,6 +471,31 @@ namespace eval tcc4tcl {
 
 		set code ""
 
+		if {$outputOnly} {
+			append code "#if 0\n"
+			set seenCLIPaths [list]
+			foreach path $state(add_inc_path) {
+				if {$path in $seenCLIPaths} {
+					continue
+				}
+				lappend seenCLIPaths $path
+				append code "CLI:-I${path}\n"
+			}
+			set seenCLIPaths [list]
+			foreach path $state(add_lib_path) {
+				if {$path in $seenCLIPaths} {
+					continue
+				}
+				lappend seenCLIPaths $path
+				append code "CLI:-L${path}\n"
+			}
+			unset seenCLIPaths
+			foreach path $state(add_lib) {
+				append code "CLI:-l${path}\n"
+			}
+			append code "#endif\n"
+		}
+
 		foreach {macroName macroVal} $state(add_macros) {
 			append code "#define [string trim "$macroName $macroVal"]\n"
 		}
@@ -533,7 +559,7 @@ namespace eval tcc4tcl {
 
 				append code "int [string totitle $packageName]_Init(Tcl_Interp *interp) \{\n"
 				append code "#ifdef USE_TCL_STUBS\n"
-				append code "  if (Tcl_InitStubs(interp, TCL_VERSION, 0) == 0L) \{\n"
+				append code "  if (Tcl_InitStubs(interp, TCL_PATCH_LEVEL, 0) == 0L) \{\n"
 				append code "    return TCL_ERROR;\n"
 				append code "  \}\n"
 				append code "#endif\n"
@@ -644,7 +670,14 @@ namespace eval tcc4tcl {
 }
 
 proc ::tcc4tcl::checkname {n} {expr {[regexp {^[a-zA-Z0-9_]+$} $n] > 0}}
-proc ::tcc4tcl::cleanname {n} {regsub -all {[^a-zA-Z0-9_]+} $n _}
+proc ::tcc4tcl::cleanname {n} {
+	set n [regsub -all {[^a-zA-Z0-9_]+} $n _]
+	if {[string index $n 0] eq "_"} {
+		set n "tcc4tcl${n}"
+	}
+
+	return $n
+}
 
 proc ::tcc4tcl::cproc {name adefs rtype {body "#"}} {
 	set handle [::tcc4tcl::new]

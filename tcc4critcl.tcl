@@ -84,21 +84,59 @@ proc ::critcl::cproc {command argList resultType body} {
 	proc $command args [list apply [list {handle command} $body] $handle $command]
 }
 
-proc ::critcl::cheaders {header} {
+proc ::critcl::cheaders {args} {
 	set handle [::critcl::_allocateHandle]
 
-	$handle ccode "#include \"$header\""
+	foreach arg $args {
+		unset -nocomplain includeDir
+
+		if {[info exists nextArg]} {
+			set thisArg $nextArg
+			unset nextArg
+			set $thisArg $arg
+		}
+
+		switch -glob -- $arg {
+			"-I" {
+				set nextArg "includeDir"
+			}
+			"-I*" {
+				set includeDir [string trim [string range $arg 2 end]]
+			}
+		}
+
+		if {[info exists includeDir]} {
+			$handle add_include_path [file join $::critcl::dir $includeDir]
+			unset includeDir
+			continue
+		}
+
+		foreach header [glob -tails -nocomplain -directory $::critcl::dir -- $arg] {
+			$handle add_include_path [file join $::critcl::dir [file dirname $header]]
+			$handle ccode "#include \"$header\""
+		}
+	}
 }
 
 proc ::critcl::csources {file} {
 	set handle [::critcl::_allocateHandle]
 
-	# Locate file relative to current script
-	set file [file join $::critcl::dir $file]
+	if {![info exists ::critcl::csources]} {
+		set ::critcl::csources [list]
+	}
 
-	set fd [open $file]
-	$handle ccode [read $fd]
-	close $fd
+	# Locate file relative to current script
+	foreach file [glob -nocomplain -directory $::critcl::dir -- $file] {
+		set fullFile [file normalize $file]
+		if {$fullFile in $::critcl::csources} {
+			continue
+		}
+		lappend ::critcl::csources $fullFile
+
+		set fd [open $file]
+		$handle ccode [read $fd]
+		close $fd
+	}
 }
 
 proc ::critcl::cflags args {
