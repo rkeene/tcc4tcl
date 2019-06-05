@@ -2,11 +2,11 @@
 
 #package require -exact critcl 0
 catch {
-	source tcc4tcl.tcl
+	source ../tcc4tcl.tcl
 }
 package provide tcc4tcl 0
 catch {
-	source tcc4critcl.tcl
+	source ../tcc4critcl.tcl
 } err
 
 # Emit a library by default

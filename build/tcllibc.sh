@@ -1,31 +1,31 @@
 #! /usr/bin/env bash
 
 inFiles=(
-	../tcllib-fossil/modules/tcllibc.tcl
-	../tcllib-fossil/modules/md4/md4c.tcl
-	../tcllib-fossil/modules/struct/graph_c.tcl
-	../tcllib-fossil/modules/base32/base32_c.tcl
-	../tcllib-fossil/modules/struct/sets_c.tcl
-	../tcllib-fossil/modules/json/jsonc.tcl
-	../tcllib-fossil/modules/pt/pt_rdengine_c.tcl
-	../tcllib-fossil/modules/pt/pt_parse_peg_c.tcl
-	../tcllib-fossil/modules/uuid/uuid.tcl
-	../tcllib-fossil/modules/struct/tree_c.tcl
-	../tcllib-fossil/modules/base32/base32hex_c.tcl
-	../tcllib-fossil/modules/base64/base64c.tcl
-	../tcllib-fossil/modules/base64/uuencode.tcl
-	../tcllib-fossil/modules/base64/yencode.tcl
-	../tcllib-fossil/modules/sha1/sha1c.tcl
-	../tcllib-fossil/modules/md5/md5c.tcl
-	../tcllib-fossil/modules/crc/crcc.tcl
-	../tcllib-fossil/modules/crc/sum.tcl
-	../tcllib-fossil/modules/crc/crc32.tcl
-	../tcllib-fossil/modules/md5crypt/md5cryptc.tcl
-	../tcllib-fossil/modules/struct/queue_c.tcl
-	../tcllib-fossil/modules/rc4/rc4c.tcl
-	../tcllib-fossil/modules/sha1/sha256c.tcl
-	../tcllib-fossil/modules/struct/stack_c.tcl
-	../tcllib-fossil/modules/dns/ipMoreC.tcl
+	../../tcllib-fossil/modules/tcllibc.tcl
+	../../tcllib-fossil/modules/md4/md4c.tcl
+	../../tcllib-fossil/modules/struct/graph_c.tcl
+	../../tcllib-fossil/modules/base32/base32_c.tcl
+	../../tcllib-fossil/modules/struct/sets_c.tcl
+	../../tcllib-fossil/modules/json/jsonc.tcl
+	../../tcllib-fossil/modules/pt/pt_rdengine_c.tcl
+	../../tcllib-fossil/modules/pt/pt_parse_peg_c.tcl
+	../../tcllib-fossil/modules/uuid/uuid.tcl
+	../../tcllib-fossil/modules/struct/tree_c.tcl
+	../../tcllib-fossil/modules/base32/base32hex_c.tcl
+	../../tcllib-fossil/modules/base64/base64c.tcl
+	../../tcllib-fossil/modules/base64/uuencode.tcl
+	../../tcllib-fossil/modules/base64/yencode.tcl
+	../../tcllib-fossil/modules/sha1/sha1c.tcl
+	../../tcllib-fossil/modules/md5/md5c.tcl
+	../../tcllib-fossil/modules/crc/crcc.tcl
+	../../tcllib-fossil/modules/crc/sum.tcl
+	../../tcllib-fossil/modules/crc/crc32.tcl
+	../../tcllib-fossil/modules/md5crypt/md5cryptc.tcl
+	../../tcllib-fossil/modules/struct/queue_c.tcl
+	../../tcllib-fossil/modules/rc4/rc4c.tcl
+	../../tcllib-fossil/modules/sha1/sha256c.tcl
+	../../tcllib-fossil/modules/struct/stack_c.tcl
+	../../tcllib-fossil/modules/dns/ipMoreC.tcl
 )
 
 set -e

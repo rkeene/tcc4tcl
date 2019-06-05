@@ -22,3 +22,4 @@ tcc4tcl.syms
 tcc4tcl.vers
 TEST-STATUS
 __TMP__
+build/tcllibc.so
