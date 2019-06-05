@@ -1,5 +1,9 @@
 #! /usr/bin/env bash
 
+cflags=(-DUSE_TCL_STUBS=1 -fPIC)
+ldflags=()
+libs=(-ltclstub8.6)
+
 inFiles=(
 	../../tcllib-fossil/modules/tcllibc.tcl
 	../../tcllib-fossil/modules/md4/md4c.tcl
@@ -51,9 +55,9 @@ for input in "${inFiles[@]}"; do
 	out="${outDir}/$(basename "${input}" .tcl)"
 
 	./tcc-critcl-to-c.tcl --mode direct "${input}" > "${out}.c"
-	cflags=($(awk '/^CLI:/{ gsub(/^CLI:/, ""); print; }' < "${out}.c"))
+	input_cflags=($(awk '/^CLI:/{ gsub(/^CLI:/, ""); print; }' < "${out}.c"))
 
-	"${CC:-cc}" -fPIC -Dinline= -o "${out}.o" "${cflags[@]}" -c "${out}.c" || continue
+	"${CC:-cc}" "${cflags[@]}" -Dinline= -o "${out}.o" "${input_cflags[@]}" -c "${out}.c" || continue
 done
 
 (
@@ -101,9 +105,20 @@ _EOF_
 }
 _EOF_
 
-	"${CC:-cc}" -fPIC -o base.o -c base.c
+	"${CC:-cc}" "${cflags[@]}" -o base.o -c base.c
 )
 
-"${CC:-cc}" -fPIC -shared -o tcllibc.so "${outDir}"/*.o
+cat << \_EOF_ > "${outDir}/version-script"
+{
+	global:
+		Tcllibc_Init;
+	local:
+		*;
+};
+_EOF_
+
+"${CC:-cc}" "${cflags[@]}" "${ldflags[@]}" -Wl,--version-script,"${outDir}/version-script" -shared -o tcllibc.so "${outDir}"/*.o "${libs[@]}"
+"${OBJCOPY:-objcopy}" --keep-global-symbol Tcllibc_Init tcllibc.so
+"${OBJCOPY:-objcopy}" --discard-all tcllibc.so
 
 exit 0
