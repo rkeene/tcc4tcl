@@ -1,7 +1,15 @@
 diff -uNr tcc-0.9.26.orig/Makefile tcc-0.9.26-fixmakefile/Makefile
 --- tcc-0.9.26.orig/Makefile	2013-02-15 08:24:00.000000000 -0600
-+++ tcc-0.9.26-fixmakefile/Makefile	2016-12-08 23:20:32.856086001 -0600
-@@ -16,7 +16,7 @@
++++ tcc-0.9.26-fixmakefile/Makefile	2019-09-04 21:17:50.621717363 -0500
+@@ -7,6 +7,7 @@
+ VPATH = $(top_srcdir)
+ 
+ CPPFLAGS = -I$(TOP) # for config.h
++CFLAGS+=@TCC_GZ_NONE@
+ 
+ ifeq (-$(findstring gcc,$(CC))-,-gcc-)
+ ifeq (-$(findstring $(GCC_MAJOR),01)-,--)
+@@ -16,7 +17,7 @@
  ifeq (-$(GCC_MAJOR)-$(findstring $(GCC_MINOR),56789)-,-4--)
  CFLAGS+=-D_FORTIFY_SOURCE=0
  else

@@ -88,6 +88,25 @@ else
 fi
 AC_SUBST(TCC_WNO_UNUSED_RESULT)
 
+dnl Determine if the compiler supports -gz=none
+AC_CACHE_CHECK([if compiler supports -gz=none], [tcc4tcl_cv_compiler_gz_none], [
+	SAVE_CFLAGS="${CFLAGS}"
+	CFLAGS="${SAVE_CFLAGS} -gz=none"
+	AC_COMPILE_IFELSE([AC_LANG_SOURCE()], [
+		tcc4tcl_cv_compiler_gz_none='yes'
+	], [
+		tcc4tcl_cv_compiler_gz_none='no'
+	])
+	CFLAGS="${SAVE_CFLAGS}"
+])
+
+if test "$tcc4tcl_cv_compiler_gz_none" = 'yes'; then
+	TCC_GZ_NONE='-gz=none'
+else
+	TCC_GZ_NONE=''
+fi
+AC_SUBST(TCC_GZ_NONE)
+
 dnl Determine HOST_PATH_SEPERATOR
 case $host_os in
 	*mingw*)
