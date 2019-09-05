@@ -2,7 +2,7 @@ dnl Tcl M4 Routines
 
 dnl Find a runnable Tcl
 AC_DEFUN([TCLEXT_FIND_TCLSH_PROG], [
-	AC_CACHE_CHECK([runnable tclsh], [tcl_cv_tclsh_native_path], [
+	AC_CACHE_CHECK([for runnable tclsh], [tcl_cv_tclsh_native_path], [
 		dnl Try to find a runnable tclsh
 		if test -z "$TCLCONFIGPATH"; then
 			TCLCONFIGPATH=/dev/null/null
@@ -52,9 +52,11 @@ AC_DEFUN([TCLEXT_FIND_TCLCONFIG], [
 	], [
 		if test "$cross_compiling" = 'no'; then
 			TCLEXT_FIND_TCLSH_PROG
-			tclConfigCheckDir="`echo 'puts [[tcl::pkgconfig get libdir,runtime]]' | "$TCLSH_PROG" 2>/dev/null`"
+			tclConfigCheckDir0="`echo 'puts [[tcl::pkgconfig get libdir,runtime]]' | "$TCLSH_PROG" 2>/dev/null`"
+			tclConfigCheckDir1="`echo 'puts [[tcl::pkgconfig get scriptdir,runtime]]' | "$TCLSH_PROG" 2>/dev/null`"
 		else
-			tclConfigCheckDir=/dev/null/null
+			tclConfigCheckDir0=/dev/null/null
+			tclConfigCheckDir1=/dev/null/null
 		fi
 
 		if test "$cross_compiling" = 'no'; then
@@ -63,7 +65,7 @@ AC_DEFUN([TCLEXT_FIND_TCLCONFIG], [
 			dirs=''
 		fi
 
-		for dir in "$tclConfigCheckDir" $dirs; do
+		for dir in "$tclConfigCheckDir0" "$tclConfigCheckDir1" $dirs; do
 			if test -f "$dir/tclConfig.sh"; then
 				TCLCONFIGPATH="$dir"
 
@@ -111,6 +113,13 @@ AC_DEFUN([TCLEXT_INIT], [
 	AC_DEFINE_UNQUOTED([MODULE_SCOPE], [static], [Define how to declare a function should only be visible to the current module])
 
 	TCLEXT_BUILD='shared'
+	AC_ARG_ENABLE([shared], AS_HELP_STRING([--disable-shared], [disable the shared build (same as --enable-static)]), [
+		if test "$enableval" = "no"; then
+			TCLEXT_BUILD='static'
+			TCL_SUPPORTS_STUBS=0
+		fi
+	])
+
 	AC_ARG_ENABLE([static], AS_HELP_STRING([--enable-static], [enable a static build]), [
 		if test "$enableval" = "yes"; then
 			TCLEXT_BUILD='static'
@@ -154,7 +163,11 @@ AC_DEFUN([TCLEXT_INIT], [
 	AC_SUBST(TCL_DEFS)
 
 	dnl Needed for package installation
-	TCL_PACKAGE_PATH="`echo "${TCL_PACKAGE_PATH}" | sed 's@  *$''@@' | awk '{ print [$]1 }'`"
+	if test "$prefix" = 'NONE' -a "$exec_prefix" = 'NONE' -a "${libdir}" = '${exec_prefix}/lib'; then
+		TCL_PACKAGE_PATH="`echo "${TCL_PACKAGE_PATH}" | sed 's@  *$''@@' | awk '{ print [$]1 }'`"
+	else
+		TCL_PACKAGE_PATH='${libdir}'
+	fi
 	AC_SUBST(TCL_PACKAGE_PATH)
 
 	AC_SUBST(LIBS)
